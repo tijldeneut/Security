@@ -7,5 +7,5 @@ service nessusd stop
 /opt/nessus/sbin/nessuscli update --all
 openvas-feed-update
 wpscan --update
-#nikto -update ## replace with cd ?? && git pull
+#nikto -update ## no longer part of Kali?
 nmap --script-updatedb
