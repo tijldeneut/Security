@@ -30,7 +30,7 @@ os.system('cls' if os.name == 'nt' else 'clear')
 print """
 [*****************************************************************************]
                 --- Nessus Legal Home Key Registration ---
-    This script will use the Official Tenable website and generate legal
+    This script will use the Official Tenable website and generate a legal
                       Nessus HomeFeed Registration Code.
 Only requirement is an internet connection to tenable.com and mailinator.com
                                NO WARRANTIES!
@@ -78,8 +78,7 @@ response = urllib2.urlopen(request)
 
 ## -- Opening the mailinator website
 import webbrowser
-#strMailinatorURL = "http://www.mailinator.com/inbox.jsp?to="+strRandomEmail.split("@")[0]
-strMailinatorURL = "http://www.mailinator.com/inbox2.jsp?public_to="+strRandomEmail.split("@")[0]
+strMailinatorURL = "http://www.mailinator.com/inbox2.jsp?to="+strRandomEmail.split("@")[0]
 print("Success, opening the Mailinator webpage, please click the mail header")
 print("Opening "+strMailinatorURL)
 webbrowser.open_new(strMailinatorURL)
