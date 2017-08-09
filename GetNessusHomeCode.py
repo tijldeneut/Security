@@ -22,7 +22,7 @@
         Nessus HomeFeed Registration Code.
         Only requirement is an internet connection to tenable.com and mailinator.com
 
-        Off course: no warranty when either of them change their website!!
+        Of course: no warranty when either of them change their website!!
 '''
 ## The Banner
 import os
