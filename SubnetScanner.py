@@ -15,7 +15,7 @@
         You should have received a copy of the GNU General Public License
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-        File name subnet-scanner.py
+        File name SubnetScanner.py
         written by tijl[dot]deneut[at]howest[dot]be
 
         Written for Python2.x
