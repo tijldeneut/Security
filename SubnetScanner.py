@@ -172,7 +172,7 @@ arrAllResponses = sorted(arrAllResponses)
 if not args.o == '':
     linetowrite=''
     for x in arrAllResponses:
-	linetowrite+ = x + ','
+	linetowrite += x + ','
     thefile = open(args.o, 'w')
     thefile.write(linetowrite[:-1])
 
