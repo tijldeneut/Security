@@ -170,9 +170,11 @@ pool.map(scanIP, zip(arrAllIps, repeat(destPort)))
 arrAllResponses = sorted(arrAllResponses)
 
 if not args.o == '':
-    thefile = open(args.o, 'w')
+    linetowrite=''
     for x in arrAllResponses:
-        thefile.write("%s," % x)
+	linetowrite+ = x + ','
+    thefile = open(args.o, 'w')
+    thefile.write(linetowrite[:-1])
 
 iNumberOfResponses=len(arrAllResponses)
 print('Found ' + str(iNumberOfResponses) + ' IP adresses!')
