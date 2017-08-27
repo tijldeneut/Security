@@ -4,4 +4,5 @@
 * DownloadNessus.py: Automated script for downloading a certain Nessus version, not really working
 * rdpstrip.py: Automated MitM script for non-NLA Remote Desktop sessions
 * snmpAutoenum.py: Automated, multi-threaded SNMP scanner, including parsing with configurable rules
+* SubnetScanner.py: This script tries to find reachable subnets on a given network
 
