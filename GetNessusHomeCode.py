@@ -78,7 +78,7 @@ response = urllib2.urlopen(request)
 
 ## -- Opening the mailinator website
 import webbrowser
-strMailinatorURL = "http://www.mailinator.com/inbox2.jsp?to="+strRandomEmail.split("@")[0]
+strMailinatorURL = "http://www.mailinator.com/v2/inbox.jsp?zone=public&query="+strRandomEmail.split("@")[0]
 print("Success, opening the Mailinator webpage, please click the mail header")
 print("Opening "+strMailinatorURL)
 webbrowser.open_new(strMailinatorURL)
