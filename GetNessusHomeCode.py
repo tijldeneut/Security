@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 ''' 
-	Copyright 2017 Photubias(c)
+	Copyright 2015 Photubias(c)
 
         This program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -30,21 +30,21 @@ os.system('cls' if os.name == 'nt' else 'clear')
 print """
 [*****************************************************************************]
                 --- Nessus Legal Home Key Registration ---
-    This script will use the Official Tenable website and generate a legal
+    This script will use the Official Tenable website and a generate legal
                       Nessus HomeFeed Registration Code.
 Only requirement is an internet connection to tenable.com and mailinator.com
                                NO WARRANTIES!
 ______________________/-> Created By Tijl Deneut(c) <-\_______________________
 [*****************************************************************************]
 """
-strNessusURL = "http://www.tenable.com/products/nessus-home"
+strNessusURL = "https://www.tenable.com/products/nessus-home"
 strToken = ""
 
 import urllib2 # Module for accessing websites
 
 ## -- First get a Token
 print("Firstly, get a token ...")
-NessusPage = urllib2.urlopen(strNessusURL)
+NessusPage = urllib2.urlopen(urllib2.Request(strNessusURL, headers={'User-Agent':'Python'}))
 NessusResult = NessusPage.readlines()
 for line in NessusResult:
     if 'token' in line and 'input' in line:
@@ -72,12 +72,15 @@ postvalues = {'first_name' : 'Mister',
           'submit' : 'Register',
     }
 postdata = urllib.urlencode(postvalues)
-request = urllib2.Request(strNessusURL, postdata)
+request = urllib2.Request(strNessusURL, postdata, headers={'User-Agent':'Python'})
 response = urllib2.urlopen(request)
 #print(response.read())
 
 ## -- Opening the mailinator website
 import webbrowser
+#strMailinatorURL = "http://www.mailinator.com/inbox.jsp?to="+strRandomEmail.split("@")[0]
+#strMailinatorURL = "http://www.mailinator.com/inbox2.jsp?public_to="+strRandomEmail.split("@")[0]
+#strMailinatorURL = "http://www.mailinator.com/inbox2.jsp?to="+strRandomEmail.split("@")[0]
 strMailinatorURL = "http://www.mailinator.com/v2/inbox.jsp?zone=public&query="+strRandomEmail.split("@")[0]
 print("Success, opening the Mailinator webpage, please click the mail header")
 print("Opening "+strMailinatorURL)
