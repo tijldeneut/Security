@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 ''' 
-	Copyright 2016 Photubias(c)
+	Copyright 2017 Photubias(c)
 
         This program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
         Off course: no warranty when the website is changed!!
 '''
 ## The Banner
-import os
+import os, urllib2
 os.system('cls' if os.name == 'nt' else 'clear')
 print """
 [*****************************************************************************]
@@ -35,24 +35,42 @@ print """
 ______________________/-> Created By Tijl Deneut(c) <-\_______________________
 [*****************************************************************************]
 """
-#"http://downloads.nessus.org/nessus3dl.php?file=Nessus-6.8.1-debian6_amd64.deb&licence_accept=yes&t=9b11c03af02baa4129e7187179841b19"
-strNessusURL = "http://www.tenable.com/products/nessus-home"
-strToken = ""
-strNessusDownloadURL = "http://downloads.nessus.org/nessus3dl.php"
+#'http://downloads.nessus.org/nessus3dl.php?file=Nessus-6.11.2-debian6_amd64.deb&licence_accept=yes&t=33cd11d53fcd00955d8affa59972bc15'
+strNessusURL = 'https://www.tenable.com/products/nessus/select-your-operating-system'
+strTimecheck = ''
+strNessusDownloadURL = 'http://downloads.nessus.org/nessus3dl.php'
+
+print('Firstly, getting the Timecheck token ...')
+NessusPage = urllib2.urlopen(urllib2.Request(strNessusURL, headers={'User-Agent':'Python'}))
+for line in NessusPage.readlines():
+    if 'timecheck' in line and 'hidden' in line:
+        strTimecheck = line.split('"hidden">')[1].split('<')[0]
+
+print('Done: ' + strTimecheck + "\n")
+
+strJson = 'https://www.tenable.com/plugins/os.json'
+FileVersion = ''
+FileVersionPage = urllib2.urlopen(urllib2.Request(strJson, headers={'User-Agent':'Python'}))
+
+for line in FileVersionPage.readlines():
+    if 'version' in line:
+        FileVersion = line.split(':')[1].split(',')[0].replace('"','')
+
+strTheFile32bit = 'Nessus-' + FileVersion + '-debian6_i386.deb'
+strTheFile64bit = 'Nessus-' + FileVersion + '-debian6_amd64.deb'
+
 print("What file do you want?")
-print("1: Nessus-6.8.1-debian6_i386.deb")
-print("2: Nessus-6.8.1-debian6_amd64.deb [default]")
+print('1: ' + strTheFile32bit)
+print('2: ' + strTheFile64bit + ' [default]')
 ans = raw_input()
 if ans == "1":
-    strTheFile = "Nessus-6.8.1-debian6_i386.deb"
+    strTheFile = strTheFile32bit
 else:
-    strTheFile = "Nessus-6.8.1-debian6_amd64.deb"
+    strTheFile = strTheFile64bit
 
-import urllib2 # Module for accessing websites
-
-strNessusDownload = strNessusDownloadURL+"?file=" + strTheFile + "&licence_accept=yes&t=9b11c03af02baa4129e7187179841b19"
+strNessusDownload = strNessusDownloadURL+'?file=' + strTheFile + '&licence_accept=yes&t=' + strTimecheck
 print("Downloading: "+strNessusDownload)
-NessusDownload = urllib2.urlopen(strNessusDownload)
+NessusDownload = urllib2.urlopen(urllib2.Request(strNessusDownload, headers={'User-Agent':'Python'}))
 myFile = open(strTheFile, "wb")
 myFile.write(NessusDownload.read())
 myFile.close()
