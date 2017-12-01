@@ -24,7 +24,7 @@
         Off course: no warranty when the website is changed!!
 '''
 ## The Banner
-import os, urllib2
+import os, sys, urllib2
 os.system('cls' if os.name == 'nt' else 'clear')
 print """
 [*****************************************************************************]
@@ -58,11 +58,16 @@ for line in FileVersionPage.readlines():
 
 strTheFile32bit = 'Nessus-' + FileVersion + '-debian6_i386.deb'
 strTheFile64bit = 'Nessus-' + FileVersion + '-debian6_amd64.deb'
+if len(sys.argv) < 2:
+    print("What file do you want?")
+    print('1: ' + strTheFile32bit)
+    print('2: ' + strTheFile64bit + ' [default]')
+    ans = raw_input()
+if sys.argv[1] == '32':
+    ans = '1'
+else:
+    ans = '2'
 
-print("What file do you want?")
-print('1: ' + strTheFile32bit)
-print('2: ' + strTheFile64bit + ' [default]')
-ans = raw_input()
 if ans == "1":
     strTheFile = strTheFile32bit
 else:
