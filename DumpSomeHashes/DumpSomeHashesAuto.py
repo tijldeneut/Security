@@ -148,10 +148,10 @@ Length=int(HexLength,16) ## Length like 0x14 (pre 1607) or 0x38 (since 1607)
 print('Offset is '+hex(NTOffset)+' and length is '+hex(Length))
 Hash = HexRegHash[(NTOffset+4)*2: (NTOffset+4+Length)*2][:32] ## Only 16 bytes needed
 if hex(Length)=='0x38':
-    print('Detected New Style Hash (AES), need SALT')
+    print('Detected New Style Hash (AES), need IV')
     Hash = HexRegHash[(NTOffset + 24) * 2: (NTOffset + 24 + Length) * 2][:32] ## Only 16 bytes needed
-    Salt = HexRegHash[(NTOffset + 8) *2:(NTOffset + 24) * 2] ## Salt needed to AES decrypt later
-    print('NT Salt: ' + Salt)
+    IV = HexRegHash[(NTOffset + 8) *2:(NTOffset + 24) * 2] ## IV needed to AES decrypt later
+    print('NT IV: ' + IV)
 elif not hex(Length)=='0x14':
     print('Error: Length not 0x14, user probably has no password?')
     raw_input('Press Enter to close')
@@ -170,10 +170,10 @@ print("Your hBootkey/Syskey should be " + hBootkey + "\n") ## 5a6c489141f82ca35d
 print('####### ---- STEP3, use hBootKey to RC4/AES decrypt Syskey ---- #######')
 hBootVersion = int(HexRegSysk[0x00:(0x00+1)*2], 16) ## First byte contains version
 if hBootVersion==3: ## AES encrypted!
-    print('Detected New Style hBootkey Hash too (AES), needs SALT')
-    hBootSalt = HexRegSysk[0x78*2:(0x78+16)*2] ## 16 Bytes salt
+    print('Detected New Style hBootkey Hash too (AES), needs IV')
+    hBootIV = HexRegSysk[0x78*2:(0x78+16)*2] ## 16 Bytes iv
     encSysk = HexRegSysk[0x88*2:(0x88+32)*2][:32] ## Only 16 bytes needed
-    Syskey = decryptAES(encSysk, hBootkey, hBootSalt)
+    Syskey = decryptAES(encSysk, hBootkey, hBootIV)
 else:
     Part = binascii.unhexlify(HexRegSysk[0x70*2:(0x70+16)*2])
     Qwerty = '!@#$%^&*()qwertyUIOPAzxcvbnmQQQQQQQQQQQQ)(*@&%'+"\x00"
@@ -193,7 +193,7 @@ if hex(Length)=='0x14': ## RC4 Encrypted Hash
     HashRC4Key = binascii.hexlify(md5.new(SYSKEY+HexRID+NTPASSWORD).digest())
     EncryptedHash = decryptRC4(Hash, HashRC4Key) ## Hash from STEP1, RC4Key from step 3 (76f1327b198c0731ae2611dab42716ea)
 if hex(Length)=='0x38': ## AES Encrypted Hash
-    EncryptedHash = decryptAES(Hash, Syskey, Salt) #494e7ccb2dad245ec2094db427a37ebf6731aed779271e6923cb91a7f6560b0d
+    EncryptedHash = decryptAES(Hash, Syskey, IV) #494e7ccb2dad245ec2094db427a37ebf6731aed779271e6923cb91a7f6560b0d
 print('Your encrypted Hash should be ' + EncryptedHash + "\n") ## a291d14b768a6ac455a0ab9d376d8551
 
 print('####### ---- STEP5, use DES derived from RID to fully decrypt the Hash ---- #######')
