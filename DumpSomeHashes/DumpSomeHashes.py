@@ -145,7 +145,7 @@ else:
     RC4Key = binascii.hexlify(md5.new(Part + Qwerty + hBootkey + Digits).digest())
     encSysk = HexRegSysk[0x80*2:(0x80+32)*2][:32]  ## Only 16 bytes needed
     Syskey = decryptRC4(encSysk, RC4Key)
-print('Your Full Syskey/SAMKey should be ' + Syskey )
+print('Your Full Syskey/SAMKey should be ' + Syskey + "\n")
 
 print('####### ---- STEP4, use SAM-/Syskey to RC4/AES decrypt the Hash ---- #######')
 HexRID = hex(RID)[2:].zfill(8) ## 500 becomes '000001f4'
