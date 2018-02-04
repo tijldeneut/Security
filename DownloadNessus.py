@@ -35,45 +35,42 @@ print """
 ______________________/-> Created By Tijl Deneut(c) <-\_______________________
 [*****************************************************************************]
 """
-#'http://downloads.nessus.org/nessus3dl.php?file=Nessus-6.11.2-debian6_amd64.deb&licence_accept=yes&t=33cd11d53fcd00955d8affa59972bc15'
+#'https://tenable-downloads-production.s3.amazonaws.com/uploads/download/file/7480/Nessus-7.0.1-debian6_amd64.deb'
 strNessusURL = 'https://www.tenable.com/products/nessus/select-your-operating-system'
-strTimecheck = ''
-strNessusDownloadURL = 'http://downloads.nessus.org/nessus3dl.php'
+strDownloadID32 = ''
+strDownloadID64 = ''
+strNessusDownloadURL = 'https://tenable-downloads-production.s3.amazonaws.com/uploads/download/file/'
 
-print('Firstly, getting the Timecheck token ...')
+print('Firstly, getting the AWS Download ID ...')
 NessusPage = urllib2.urlopen(urllib2.Request(strNessusURL, headers={'User-Agent':'Python'}))
 for line in NessusPage.readlines():
-    if 'timecheck' in line and 'hidden' in line:
-        strTimecheck = line.split('"hidden">')[1].split('<')[0]
+    if 'debian' in line and 'amd64.deb' in line and 'download-id' in line:
+        strTheFile64bit = line.split('data-file-name="')[1].split('"')[0]
+        strDownloadID64 = line.split('data-download-id="')[1].split('"')[0]
+    if 'debian' in line and 'i386.deb' in line and 'download-id' in line:
+        strTheFile32bit = line.split('data-file-name="')[1].split('"')[0]
+        strDownloadID32 = line.split('data-download-id="')[1].split('"')[0]
 
-print('Done: ' + strTimecheck + "\n")
+print('Done: ' + strDownloadID64 + ' (amd64) or ' + strDownloadID32 + ' (i386)' + "\n")
 
-strJson = 'https://www.tenable.com/plugins/os.json'
-FileVersion = ''
-FileVersionPage = urllib2.urlopen(urllib2.Request(strJson, headers={'User-Agent':'Python'}))
-
-for line in FileVersionPage.readlines():
-    if 'version' in line:
-        FileVersion = line.split(':')[1].split(',')[0].replace('"','')
-
-strTheFile32bit = 'Nessus-' + FileVersion + '-debian6_i386.deb'
-strTheFile64bit = 'Nessus-' + FileVersion + '-debian6_amd64.deb'
 if len(sys.argv) < 2:
     print("What file do you want?")
     print('1: ' + strTheFile32bit)
     print('2: ' + strTheFile64bit + ' [default]')
     ans = raw_input()
-if sys.argv[1] == '32':
+if len(sys.argv) > 1 and sys.argv[1] == '32':
     ans = '1'
 else:
     ans = '2'
 
 if ans == "1":
     strTheFile = strTheFile32bit
+    strDownloadID = strDownloadID32
 else:
     strTheFile = strTheFile64bit
+    strDownloadID = strDownloadID64
 
-strNessusDownload = strNessusDownloadURL+'?file=' + strTheFile + '&licence_accept=yes&t=' + strTimecheck
+strNessusDownload = strNessusDownloadURL + strDownloadID + '/' + strTheFile
 print("Downloading: "+strNessusDownload)
 NessusDownload = urllib2.urlopen(urllib2.Request(strNessusDownload, headers={'User-Agent':'Python'}))
 myFile = open(strTheFile, "wb")
