@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 ''' 
-	Copyright 2017 Photubias(c)
+	Copyright 2018 Photubias(c)
 
         This program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -58,12 +58,7 @@ if len(sys.argv) < 2:
     print('1: ' + strTheFile32bit)
     print('2: ' + strTheFile64bit + ' [default]')
     ans = raw_input()
-if len(sys.argv) > 1 and sys.argv[1] == '32':
-    ans = '1'
-else:
-    ans = '2'
-
-if ans == "1":
+if (len(sys.argv) > 1 and sys.argv[1] == '32') or ans == '1':
     strTheFile = strTheFile32bit
     strDownloadID = strDownloadID32
 else:
