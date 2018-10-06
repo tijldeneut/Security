@@ -18,7 +18,7 @@
         File name snmpautoenum.py
         written by tijl[dot]deneut[at]howest[dot]be
 
-        This script will scan a whole range of IP addresses and store all their SNMP MIBs.
+        This script will scan a whole range of IP addresses and store all their SNMP OIDs.
         They are stored in text-files called <ipaddress>.snmp
         After that, the script can parse these large files,
            selecting only the strings into stringresults.txt
