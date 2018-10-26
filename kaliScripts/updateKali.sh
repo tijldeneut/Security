@@ -1,7 +1,6 @@
 #!/bin/bash
-apt-get update
-apt-get upgrade -y
-apt-get autoremove -y
+apt update
+apt --dist-upgrade autoremove -y
 msfupdate
 service nessusd stop
 /opt/nessus/sbin/nessuscli update --all
