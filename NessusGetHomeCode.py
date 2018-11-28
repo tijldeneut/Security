@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 ''' 
-	Copyright 2017 Photubias(c)
+	Copyright 2018 Photubias(c)
 
         This program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -78,10 +78,7 @@ response = urllib2.urlopen(request)
 
 ## -- Opening the mailinator website
 import webbrowser
-#strMailinatorURL = "http://www.mailinator.com/inbox.jsp?to="+strRandomEmail.split("@")[0]
-#strMailinatorURL = "http://www.mailinator.com/inbox2.jsp?public_to="+strRandomEmail.split("@")[0]
-#strMailinatorURL = "http://www.mailinator.com/inbox2.jsp?to="+strRandomEmail.split("@")[0]
-strMailinatorURL = "http://www.mailinator.com/v2/inbox.jsp?zone=public&query="+strRandomEmail.split("@")[0]
+strMailinatorURL = "http://www.mailinator.com/v3/index.jsp?zone=public&query="+strRandomEmail.split("@")[0]
 print("Success, opening the Mailinator webpage, please click the mail header")
 print("Opening "+strMailinatorURL)
 webbrowser.open_new(strMailinatorURL)
