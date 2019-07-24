@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!python2.7
 '''
 I interpreted and reused code from:
 https://github.com/rapid7/rex-powershell/blob/master/spec/file_fixtures/powerdump.ps1
