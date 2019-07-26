@@ -3,6 +3,7 @@
 I interpreted and reused code from:
 https://github.com/rapid7/rex-powershell/blob/master/spec/file_fixtures/powerdump.ps1
 As of Win10 v1607 (>10.0.14393), the HASH encoding changed ...
+Accompanying blog post: http://www.insecurity.be/blog/2018/01/21/retrieving-ntlm-hashes-and-what-changed-technical-writeup/
 '''
 print('#################### By Tijl Deneut ###########################')
 print('This scripts requires \'pycrypto\' to run (which requires http://aka.ms/vcpython27 on Windows)')
