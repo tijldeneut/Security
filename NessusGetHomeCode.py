@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 ''' 
-	Copyright 2018 Photubias(c)
+	Copyright 2019 Photubias(c)
 
         This program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -37,57 +37,60 @@ Only requirement is an internet connection to tenable.com and mailinator.com
 ______________________/-> Created By Tijl Deneut(c) <-\_______________________
 [*****************************************************************************]
 """
-strNessusURL = "https://www.tenable.com/products/nessus-home"
-strToken = ""
+strNessusURL = 'https://www.tenable.com/products/nessus/nessus-essentials'
 
-import urllib2 # Module for accessing websites
+strToken = ''
 
-## -- First get a Token
-print("Firstly, get a token ...")
-NessusPage = urllib2.urlopen(urllib2.Request(strNessusURL, headers={'User-Agent':'Python'}))
+## -- Create the cookies and receive CSRF token
+print('--- Connecting to tenable.com')
+import urllib2, cookielib
+cookjar = cookielib.CookieJar()
+opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookjar))
+NessusPage = opener.open(urllib2.Request(strNessusURL, headers={'User-Agent':'Python'}))
 NessusResult = NessusPage.readlines()
 for line in NessusResult:
     if 'token' in line and 'input' in line:
         strToken = line.split()[3].split("\"")[1]
-print("Done: "+strToken)
+print('Done: ' + strToken)
 
-## -- Then register for a key, we need a random value
+## -- Generate random email
+print('--- Generating random e-mail')
 import random, string
 strRandomEmail = ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(20))
-strRandomEmail = strRandomEmail+"@mailinator.com"
-#print(strRandomEmail)
+strRandomEmail = strRandomEmail + '@mailinator.com'
+print('[*] Using "'+strRandomEmail+'"')
 
-print("Secondly, let's request a code, using this emailaddress: ")
-print(strRandomEmail)
-## - Request the key
+## -- Request code (first_name=bla&last_name=bla&email=smdifhmsqifdhmdh%40mailinator.com&org_name=&robot=human&type=homefeed&token=M4zti%2BON6P0rXC90AFtCg1m7Tp%2BoHRQoQhJ%2Fp7gV%2Fz0%3D&country=BE&submit=Register)
+print('--- Registering for a code')
 import urllib
 postvalues = {'first_name' : 'Mister',
           'last_name' : 'Student',
           'email' : strRandomEmail,
-          'country' : 'AF',
-          'Accept' : 'Agree',
+          'org_name' : '',
           'robot' : 'human',
           'type' : 'homefeed',
           'token' : strToken,
-          'submit' : 'Register',
-    }
+          'country' : 'AF',
+          'submit' : 'Register'
+           }
 postdata = urllib.urlencode(postvalues)
-request = urllib2.Request(strNessusURL, postdata, headers={'User-Agent':'Python'})
-response = urllib2.urlopen(request)
-#print(response.read())
+NessusRegister = opener.open(urllib2.Request(strNessusURL, postdata, headers={'User-Agent':'Python'}))
 
 ## -- Opening the mailinator website
+print('--- Opening browser to mailinator')
 import webbrowser
-strMailinatorURL = "http://www.mailinator.com/v3/index.jsp?zone=public&query="+strRandomEmail.split("@")[0]
-print("Success, opening the Mailinator webpage, please click the mail header")
-print("Opening "+strMailinatorURL)
+strMailinatorURL = 'https://www.mailinator.com/v3/index.jsp?zone=public&query=' + strRandomEmail.split("@")[0] + '#/#inboxpane'
+print('Success, opening the Mailinator webpage, please click the mail header')
+print('Opening ' + strMailinatorURL)
 webbrowser.open_new(strMailinatorURL)
-print("")
-print("--> The key should look something like AAAA-BBBB-CCCC-DDDD-EEEE")
-print("Register Nessus with this key like this:")
-print("/opt/nessus/sbin/nessuscli fetch --register <key>")
-print("")
-print("Manual Nessus update:")
-print("/opt/nessus/sbin/nessuscli update --all")
+print('')
+print('--> The key should look something like AAAA-BBBB-CCCC-DDDD-EEEE')
+print('Register Nessus with this key like this:')
+print('/opt/nessus/sbin/nessuscli fetch --register <key>')
+print('')
+print('Manual Nessus update:')
+print('/opt/nessus/sbin/nessuscli update --all')
 
 raw_input('When ready press [Enter] to exit')
+
+exit(0)
