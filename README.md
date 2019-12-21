@@ -6,4 +6,4 @@
 * snmpAutoenum.py: Automated, multi-threaded SNMP scanner, including parsing with configurable rules
 * SubnetScanner.py: This script tries to find reachable subnets on a given network
 * DumpSomeHashes: Two scripts to demonstrate how Windows retrieves hashes from the registry, also works on Windows 10 >v1607 (AES Encryption)
-* IPMI-Scan-Hashes.py: Multi-Threaded and automated scanner for finding IPMI systems on a subnet and dumping hashes unauthenticated
+* IPMI-Scan-Hashes.py: Multi-threaded and automated scanner for finding IPMI systems on a subnet and dumping hashes unauthenticated
