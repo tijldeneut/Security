@@ -94,8 +94,8 @@ if bInteractive:
     print('      Run "dpkg -i ' + strTheFile + '" to install.')
 else: ## Installing and creating script
     print('--- Starting installation ...')
-    os.system('dpkg -i '+strTheFile)
-    os.system('echo #!/bin/bash > startNessus.sh')
+    os.system('dpkg -i ' + strTheFile + ' && rm ' + strTheFile)
+    os.system('echo \#\!/bin/bash >startNessus.sh')
     os.system('echo service nessusd start >>startNessus.sh')
     os.system('echo "firefox https://127.0.0.1:8834 &" >>startNessus.sh')
     os.system('chmod +x startNessus.sh')
