@@ -47,7 +47,7 @@ bInteractive = True
 
 if len(sys.argv) > 1:
     bInteractive = False
-    print('--- Extra, argument detected.')
+    print('--- Extra argument detected.')
     print('     Performing x64 download AND installation AND script creation AND Browser Launch')
 
 ## Step0: get file names
