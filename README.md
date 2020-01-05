@@ -1,5 +1,5 @@
 # GeneralSecurityScripts
---> Please note, unless mentioned otherwise, all scripts work on both Linux and Windows
+--> Please note, unless mentioned otherwise, all scripts work on both Linux and Windows, and written for Python v2
 * GetNessusHomeCode.py: Automated registration for new Nessus Home Feed license
 * DownloadNessus.py: Automated script for downloading the most recent Nessus version (Linux version only)
 * rdpstrip.py: Automated MitM script for non-NLA Remote Desktop sessions
