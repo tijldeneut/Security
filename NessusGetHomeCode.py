@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 ''' 
-	Copyright 2019 Photubias(c)
+	Copyright 2020 Photubias(c)
 
         This program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -38,8 +38,10 @@ ______________________/-> Created By Tijl Deneut(c) <-\_______________________
 [*****************************************************************************]
 """
 strNessusURL = 'https://www.tenable.com/products/nessus/nessus-essentials'
-
 strToken = ''
+bInteractive = True
+
+if len(sys.argv) > 1: bInteractive = False
 
 ## -- Create the cookies and receive CSRF token
 print('--- Connecting to tenable.com')
@@ -91,6 +93,6 @@ print('')
 print('Manual Nessus update:')
 print('/opt/nessus/sbin/nessuscli update --all')
 
-raw_input('When ready press [Enter] to exit')
+if bInteractive: raw_input('When ready press [Enter] to exit')
 
 exit(0)
