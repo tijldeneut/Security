@@ -25,7 +25,7 @@
         Of course: no warranty when either of them change their website!!
 '''
 ## The Banner
-import os
+import os, sys
 os.system('cls' if os.name == 'nt' else 'clear')
 print """
 [*****************************************************************************]
