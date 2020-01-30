@@ -48,7 +48,7 @@ bInteractive = True
 if len(sys.argv) > 1:
     bInteractive = False
     print('--- Extra argument detected.')
-    print('     Performing x64 download AND installation AND script creation AND Browser Launch')
+    print('     Performing x64 download AND installation AND script creation')
 
 ## Step0: get file names
 print('--- Getting filenames...')
@@ -96,9 +96,8 @@ else: ## Installing and creating script
     print('--- Starting installation ...')
     os.system('dpkg -i ' + strTheFile + ' && rm ' + strTheFile)
     os.system('echo \#\!/bin/bash >startNessus.sh')
-    os.system('echo service nessusd start >>startNessus.sh')
+    os.system('echo sudo service nessusd start >>startNessus.sh')
     os.system('echo "firefox https://127.0.0.1:8834 &" >>startNessus.sh')
     os.system('chmod +x startNessus.sh')
-    os.system('./startNessus.sh &')
 print('--- All done')
 exit(0)
