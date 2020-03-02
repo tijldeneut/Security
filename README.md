@@ -7,4 +7,4 @@
 * SubnetScanner.py: This script tries to find reachable subnets on a given network
 * DumpSomeHashes: Two scripts to demonstrate how Windows retrieves hashes from the registry, also works on Windows 10 >v1607 (AES Encryption)
 * IPMI-Scan-Hashes.py: Multi-threaded and automated scanner for finding IPMI systems on a subnet and dumping hashes unauthenticated
-* CVE-2020-0688-Photubias.py: Native scanner and exploit (no extra's required) for MS Exchange Server 2019 Authenticated RCE/LPE (as System)
+* CVE-2020-0688-Photubias.py: Native scanner and exploit (no extra's required) for MS Exchange Server Authenticated RCE/LPE (as System)
