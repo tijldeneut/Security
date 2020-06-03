@@ -10,4 +10,5 @@
 * CVE-2020-0688.py: Native scanner and exploit (no extra's required) for MS Exchange Server Authenticated RCE/LPE (as System)
 * CVE-2020-11108.py: Native exploit script for Pi-hole 4.4.0 (Pi-hole v4.4.0-g9e49077, Web v4.3.3,v4.3.2-1-g4f824be, FTL v5.0) for web authenticated RCE + LPE
 * CVE-2020-12720.py: Native exploit script for vBulletin v5.6.1 (might also work on older versions of v5) for Admin Account takeover using SQLi plus authenticated RCE
-* CVE-2020-3592.py: Native exploit script for vCenter Server 6.7 random user adding and escalation (Authentication Bypass)
+* CVE-2020-3592.py: Native exploit script for vCenter Server 6.7 random user adding and escalation (Authentication Bypass), mirror: 
+https://www.exploit-db.com/exploits/48535
