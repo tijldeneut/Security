@@ -20,7 +20,7 @@
         File name GetIPMIHashes.py
         written by tijl[dot]deneut[at]howest[dot]be
 
-        --- IPMI Hash Dumper ---
+        --- IPMI Unauthenticated Hash Dumper ---
         Walks through most known default usernames to retrieve hashes
 '''
 import socket, binascii, os, struct, argparse, sys, time
