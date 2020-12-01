@@ -17,7 +17,7 @@
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
         File name rdpstrip.py
-        written by tijl[dot]deneut[at]howest[dot]be for XiaK / Ghent University
+        written by tijl[dot]deneut[at]howest[dot]be for IC4 / Ghent University
 
         [*****************************************************************************]
                         --- Remote Desktop Stripping and Sniffing ---
@@ -85,7 +85,7 @@ lstClients = oAdapter = []
 sForwardSocket = sOutfile = sCert = sMitm = sInterface = ''
 bSniffOnly = False
 
-## These are here in case generation fails (created with: openssl req -new -days 365 -nodes -x509 -subj "/C=BE/ST=Flanders/L=Kortrijk/O=XiaK/CN=RDPstripTijl" -keyout cert.key -out cert.pem)
+## These are here in case generation fails (created with: openssl req -new -days 365 -nodes -x509 -subj "/C=BE/ST=Flanders/L=Kortrijk/O=IC4/CN=RDPstripTijl" -keyout cert.key -out cert.pem)
 S_KEY_FILE = "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDJMpw4z3UwQaNO\nF3/TIkEXUaai5iaXI2IzyDtBE4BVckcERtfCYtmnZu208TocmBfc++6cQ4IxELG+\ncKajzHpVLExyvhx83orKk338IoqxV3W4DDQSjffelLIzG8QcDJ+wT+xVdAfHQx5Q\n6uLWopm1pA7QlBoXutPBLpyDpyQmXTZk6pmCaERnwjALYPBtLwezmKiL9igRDAdh\nww7MT7uOxt2xRqSfOXw1/mND9oto6wnXovVaNSi3u5oWdNb/aY+MM8d5nvO10UQI\nFvWuSqLJzSnak+4q28jdXDziTcGFuS0fkkFYnGfAQjoct6awRRl7HAWcP0725tEf\n5HfYXlbHAgMBAAECggEBAJb88hv4JDvIpmMOY5Dw3eRAFEufaEp39VRi6YTWu7Jk\nBkOBXp20TR7BsZXeifu3cAEY12JRjzx/CMSgCY5W/1831U8uuHZFE+cedKdozKh1\nuBQcpF9gRym0cV7FcZCTMKvB7tvaLZQuHGwhOYZVlACqU6vX2RUB0bPh5Pcv0YMv\nj3lG6KO0RQt0+n48M3DgBd0djd6Fxbop7MChREaPY6iqbt88hy3dPO2RirtR1lTc\nCIpGKGq1/Rch6BN4uL+S7+JNuB7gD5aPye0u0veJj9c0EapzqDSWzglIH35w3h23\nIPAEVup/ZT3/RYSEhhztMO/klm/FrJDhdJXP0BLBZnECgYEA7pVySyO67GijEhTV\nBiSBHNwuqXX5nXnRH6gBamxDX2AlIunZ/xEjAqmzAfsxWWLIDelyvJLz6kCBZM5w\ngwiKNIugYGRykIRa0guNst7dr9EP98PmGWpwPt2It4ge8Yx1LDL63miU9XxamyeS\nnA6y+T+mW3WjaLlchiwOP3uub5UCgYEA1+KCJ5vqkBli+2z90Os1PLZv7Ni77Fq0\n03QvJ2PO4tQvvTTRr+FI60bISAjmaqGyMQV7przqUaVm/1abprGNReI4rLGBDVi2\nef9SfdW4l/tE67j6tTJbDmha+dHmSpAAH/41mPki8PuU5zIjdLRlcg/lGvcrKhIz\ns9xsA8bQBesCgYADE4A2wc4uMCcyG3ynqJ7VjW04mCHQyvpMSzFBewXfW/D+oz9B\nT6pA5Yk+VEvNmD12GHV3QvnMImrIrvS6a8jEZqx5sbHcdShqnuWD0eXP14U6L5du\n6nVqChcyLpofiS0Vlc6wQW7yP1k3uOnmAzaBijWN5lVmC0XLIRRJ80FLhQKBgD/v\nXB6A5YHRkuflSnIiBn05hoI9WcJQxrbM9N4UiAPTVWQSjXsqHB9ZshzrTdoMkypD\ndnBWCIsvkgZSzvwaHz2wFprGYvLh8ADHZdXQgr+38ZxiBxW8mQz2SOMtj6dLaE4R\nSixItFlsGJgz2B5LArQ6Et7ejpECHP/Kas7fhWILAoGAQoNMKdTPggPB3xDUs7gs\nrNcJLeW2zXO+4pi7hTC/O+12awJ1G/cQJ2vmgOvEkXBLaJjya3w0gSvNDvPqiQtO\nODvTrGQYtLH1w18JamglqSMa+wjPHKjPRUrQTL8KHMxsnoM3hjYY2XLyERKVAq9w\nnr74fT1/BLEzZyaCnGedtM4="
 S_PEM_FILE = "MIIDhTCCAm2gAwIBAgIJALWxa+0KqLilMA0GCSqGSIb3DQEBCwUAMFkxCzAJBgNV\nBAYTAkJFMREwDwYDVQQIDAhGbGFuZGVyczERMA8GA1UEBwwIS29ydHJpamsxDTAL\nBgNVBAoMBFhpYUsxFTATBgNVBAMMDFJEUHN0cmlwVGlqbDAeFw0xNjAyMjUxOTMx\nNDNaFw0xNzAyMjQxOTMxNDNaMFkxCzAJBgNVBAYTAkJFMREwDwYDVQQIDAhGbGFu\nZGVyczERMA8GA1UEBwwIS29ydHJpamsxDTALBgNVBAoMBFhpYUsxFTATBgNVBAMM\nDFJEUHN0cmlwVGlqbDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMky\nnDjPdTBBo04Xf9MiQRdRpqLmJpcjYjPIO0ETgFVyRwRG18Ji2adm7bTxOhyYF9z7\n7pxDgjEQsb5wpqPMelUsTHK+HHzeisqTffwiirFXdbgMNBKN996UsjMbxBwMn7BP\n7FV0B8dDHlDq4taimbWkDtCUGhe608EunIOnJCZdNmTqmYJoRGfCMAtg8G0vB7OY\nqIv2KBEMB2HDDsxPu47G3bFGpJ85fDX+Y0P2i2jrCdei9Vo1KLe7mhZ01v9pj4wz\nx3me87XRRAgW9a5KosnNKdqT7irbyN1cPOJNwYW5LR+SQVicZ8BCOhy3prBFGXsc\nBZw/Tvbm0R/kd9heVscCAwEAAaNQME4wHQYDVR0OBBYEFGKGB/x//9yEHilqL1T8\n6sCirTnJMB8GA1UdIwQYMBaAFGKGB/x//9yEHilqL1T86sCirTnJMAwGA1UdEwQF\nMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAI6Gclcs1Rhoy8ofKmRokDFRVfjQSCJY\n7pDPZIlowCSuJWnUwJ3KPohJ4Y5HsAMAgJ50MnQShqZMjoPBOCam7abxDxD7EMui\nr26TEtPancGcv0NLeJj1e5cnvBlxycBqBkQmO8ksJEOqccmW1+nEwEZ308lVkVCG\n7GnoF24gHpWwVpYIMWH6sT3qZy5G8Lp89XjcUF1EqvG8Hlnk0PWvendy1u9k60v7\n/z6m2Tho+c3uYz+X0I1+AeoiWfEAw2S0SSnWRT5DldjrlXb0U7u3DV7esbN/IAvG\nj4P1Gb8dqNc73P9k1XyjDXaiLXeY5uHGu2wqHtMjkGjYC28x9lbtyGs="
 
@@ -196,7 +196,7 @@ def generateCerts(sCertname):
 		#TODO use certreq and certutil.exe ?
 	else:
 		os.system('clear')
-		os.system('openssl req -new -days 365 -nodes -x509 -subj "/C=BE/ST=Flanders/L=Kortrijk/O=XiaK/CN=RDPstripXiaK" -keyout '+sCertname+'.key -out '+sCertname+'.pem')
+		os.system('openssl req -new -days 365 -nodes -x509 -subj "/C=BE/ST=Flanders/L=Kortrijk/O=IC4/CN=RDPstripIC4" -keyout '+sCertname+'.key -out '+sCertname+'.pem')
 		if not os.path.isfile(sCert + '.key') and not os.path.isfile(sCert + '.pem'):
 			print('Something went wrong, openssl not working correctly. Creating hardcoded keyfiles.')
 			exportCerts(sCertname)
