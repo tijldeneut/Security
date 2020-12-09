@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 '''
-	Copyright 2019 Photubias(c)
+	Copyright 2020 Photubias(c)
 
         This program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
