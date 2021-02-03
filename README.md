@@ -13,3 +13,4 @@
 * CVE-2020-3952.py: Native exploit script for vCenter Server 6.7 random user adding and escalation (Authentication Bypass), mirror: 
 https://www.exploit-db.com/exploits/48535
 * CVE-2021-2109.py: Exploit script for WebLogic 14.1.1.0 and JDK's under 6u201, 7u191, 8u182 & 11.0.1 (Authenticated RCE), mirror: https://www.exploit-db.com/exploits/49461
+* VMware-fingerprinter.py: Automated, multi-threaded VMware enumeration scanner, including a couple more critical vulnerability detections
