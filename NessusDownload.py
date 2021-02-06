@@ -1,6 +1,6 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 ''' 
-	Copyright 2020 Photubias(c)
+	Copyright 2021 Photubias(c)
 
         This program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -24,9 +24,10 @@
         Of course: no warranty when the website is changed!!
 '''
 ## The Banner
-import os, sys, urllib2, cookielib, urllib, json
+#import os, sys, urllib2, cookielib, urllib, json
+import os, sys, json, urllib.request, http.cookiejar
 os.system('cls' if os.name == 'nt' else 'clear')
-print """
+print("""
 [*****************************************************************************]
                   --- Nessus Linux Debian deb downloader ---
                This script will use the Official Tenable website.
@@ -34,7 +35,7 @@ print """
                                NO WARRANTIES!
 ______________________/-> Created By Tijl Deneut(c) <-\_______________________
 [*****************************************************************************]
-"""
+""")
 
 strNessusURL = 'https://www.tenable.com/downloads/nessus'
 strNessusURL = 'https://www.tenable.com/downloads/api/v1/public/pages/nessus'
@@ -52,9 +53,10 @@ if len(sys.argv) > 1:
 
 ## Step0: get file names
 print('--- Getting filenames...')
-cookjar = cookielib.CookieJar()
-opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookjar))
-NessusList = opener.open(urllib2.Request(strNessusURL, headers={'User-Agent':'Python'}))
+cookjar = http.cookiejar.CookieJar()
+opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookjar))
+opener.addheaders = [('User-Agent','Python')]
+NessusList = opener.open(strNessusURL)
 jsonArr = json.loads(NessusList.read())
 for el in jsonArr['downloads']:
     if 'Kali' in el['description'] and '32-bit' in el['description']:
@@ -71,7 +73,7 @@ if bInteractive:
     print('--- What file do you want?')
     print('1: ' + strFile32bit + ' (id ' + strFile32bitID + ')')
     print('2: ' + strFile64bit + ' (id ' + strFile64bitID + ') [default]')
-    ans = raw_input()
+    ans = input('[?] : ')
 if bInteractive and ans == '1':
     strTheFile = strFile32bit
     strDownloadID = strFile32bitID
@@ -83,12 +85,13 @@ else:
 strNessusDownloadURL = strNessusDownloadURL.replace('xxxxxx',strDownloadID)
 try:
     print('--- Downloading: ' + strTheFile)
-    DownloadPage = urllib2.urlopen(urllib2.Request(strNessusDownloadURL, headers={'User-Agent':'Python'}))
+    #DownloadPage = urllib2.urlopen(urllib2.Request(strNessusDownloadURL, headers={'User-Agent':'Python'}))
+    DownloadPage = opener.open(strNessusDownloadURL)
     myFile = open(strTheFile, "wb")
     myFile.write(DownloadPage.read())
     myFile.close()
-except urllib2.HTTPError, e:
-    print e.fp.read()
+except:
+    print(sys.exc_info()[0])
     exit(1)
 if bInteractive:
     print('      Run "dpkg -i ' + strTheFile + '" to install.')

@@ -1,6 +1,6 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 ''' 
-	Copyright 2020 Photubias(c)
+	Copyright 2021 Photubias(c)
 
         This program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 ## The Banner
 import os, sys
 os.system('cls' if os.name == 'nt' else 'clear')
-print """
+print("""
 [*****************************************************************************]
                 --- Nessus Legal Home Key Registration ---
     This script will use the Official Tenable website and a generate legal
@@ -36,7 +36,7 @@ Only requirement is an internet connection to tenable.com and mailinator.com
                                NO WARRANTIES!
 ______________________/-> Created By Tijl Deneut(c) <-\_______________________
 [*****************************************************************************]
-"""
+""")
 strNessusURL = 'https://www.tenable.com/products/nessus/nessus-essentials'
 strToken = ''
 bInteractive = True
@@ -45,15 +45,17 @@ if len(sys.argv) > 1: bInteractive = False
 
 ## -- Create the cookies and receive CSRF token
 print('--- Connecting to tenable.com')
-import urllib2, cookielib
-cookjar = cookielib.CookieJar()
-opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookjar))
-NessusPage = opener.open(urllib2.Request(strNessusURL, headers={'User-Agent':'Python'}))
+#import urllib2, cookielib
+import urllib.request, http.cookiejar
+cookjar = http.cookiejar.CookieJar()
+opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookjar))
+opener.addheaders = [('User-Agent','Python')]
+NessusPage = opener.open(strNessusURL)
 NessusResult = NessusPage.readlines()
 for line in NessusResult:
-    if 'token' in line and 'input' in line:
-        strToken = line.split()[3].split("\"")[1]
-print('Done: ' + strToken)
+    if 'token' in line.decode(errors='ignore') and 'input' in line.decode(errors='ignore'):
+        strToken = line.split()[3].split(b'\"')[1]
+print('Done: ' + strToken.decode(errors='ignore'))
 
 ## -- Generate random email
 print('--- Generating random e-mail')
@@ -64,7 +66,7 @@ print('[*] Using "'+strRandomEmail+'"')
 
 ## -- Request code (first_name=bla&last_name=bla&email=smdifhmsqifdhmdh%40mailinator.com&org_name=&robot=human&type=homefeed&token=M4zti%2BON6P0rXC90AFtCg1m7Tp%2BoHRQoQhJ%2Fp7gV%2Fz0%3D&country=BE&submit=Register)
 print('--- Registering for a code')
-import urllib
+import urllib.parse
 postvalues = {'first_name' : 'Mister',
           'last_name' : 'Student',
           'email' : strRandomEmail,
@@ -75,8 +77,9 @@ postvalues = {'first_name' : 'Mister',
           'country' : 'AF',
           'submit' : 'Register'
            }
-postdata = urllib.urlencode(postvalues)
-NessusRegister = opener.open(urllib2.Request(strNessusURL, postdata, headers={'User-Agent':'Python'}))
+postdata = urllib.parse.urlencode(postvalues).encode()
+#NessusRegister = opener.open(strNessusURL, data = postdata, headers={'User-Agent':'Python'})
+NessusRegister = opener.open(strNessusURL, data = postdata)
 
 ## -- Opening the mailinator website
 print('--- Opening browser to mailinator')
@@ -93,6 +96,6 @@ print('')
 print('Manual Nessus update:')
 print('/opt/nessus/sbin/nessuscli update --all')
 
-if bInteractive: raw_input('When ready press [Enter] to exit')
+if bInteractive: input('When ready press [Enter] to exit')
 
 exit(0)
