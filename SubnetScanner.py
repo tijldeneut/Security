@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 ''' 
 	Copyright 2017 Photubias(c)
 
@@ -18,7 +18,7 @@
         File name SubnetScanner.py
         written by tijl[dot]deneut[at]howest[dot]be
 
-        Written for Python2.x
+        Written for Python3
         This script tries to find potential subnets on a given network,
         it will look for the usual private subnets.
         It tries to take advantage of the fact that the routers on each subnet
@@ -98,9 +98,9 @@ def getIPArray(subnet,iScansPerSubnet):
             outQuads -= 1
         return b
     
-    iHostBits = 32-int(subnet.split("/")[1])
+    iHostBits = 32 - int(subnet.split("/")[1])
     iAmountOfIPs = int(math.pow(2,iHostBits))
-    bStep = dec2bin(iAmountOfIPs / iScansPerSubnet)
+    bStep = dec2bin(int(iAmountOfIPs / iScansPerSubnet))
     #print('Step is '+bStep)
     
     bFirstIp = (ip2bin(subnet.split("/")[0]))[:-1] + '1'
@@ -117,7 +117,7 @@ def getIPArray(subnet,iScansPerSubnet):
 
 ### The program
 ## The Banner
-print """
+print("""
 [*****************************************************************************]
                         --- Automatic Subnet Scanner ---
          This script tries to find potential subnets on a network,
@@ -132,13 +132,13 @@ print """
   
 ______________________/-> Created By Tijl Deneut(c) <-\_______________________
 [*****************************************************************************]
-"""
+""")
 ## Defaults and parsing arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('-s', help='Provide subnet to scan (CIDR, e.g. 192.168.0.0/16)', default='192.168.0.0/16')
 parser.add_argument('-n', help='Amount of IPs to scan, will device the subnet into equal portions. 256 means 192.168.0.1, 192.168.1.1, 192.168.2.1, ..., 192.168.255.1.', default=256, type=int)
 parser.add_argument('-t', help='Provide number of threads to use, default is 128', default=128, type=int)
-parser.add_argument('-p', help='Which Port to scan for, default is 22?', default=22, type=int)
+parser.add_argument('-p', help='Which Port to scan for, default is 22', default=22, type=int)
 parser.add_argument('-o', help='Create CSV file with results.', default='')
 args = parser.parse_args()
 
@@ -158,7 +158,7 @@ for i in range(0,len(subnetsToScan)):
 print('Ready to scan ' + str(len(arrAllIps)) + ' IP Adresses on TCP Port ' + str(destPort))
 
 if (len(sys.argv) == 1 or (len(sys.argv) <= 3 and args.o)):
-    raw_input('Press enter to start ' + str(threads) + ' threads, each waiting ' + str(itimeout) + ' seconds.\n')
+    input('Press enter to start ' + str(threads) + ' threads, each waiting ' + str(itimeout) + ' seconds.\n')
 else:
     print('Starting ' + str(threads) + ' threads, each waiting ' + str(itimeout) + ' seconds.\n')
 
@@ -170,14 +170,14 @@ pool.map(scanIP, zip(arrAllIps, repeat(destPort)))
 arrAllResponses = sorted(arrAllResponses)
 
 if not args.o == '':
-    linetowrite=''
+    linetowrite = ''
     for x in arrAllResponses:
-	linetowrite += x + ','
+        linetowrite += x + ','
     thefile = open(args.o, 'w')
     thefile.write(linetowrite[:-1])
 
-iNumberOfResponses=len(arrAllResponses)
+iNumberOfResponses = len(arrAllResponses)
 print('Found ' + str(iNumberOfResponses) + ' IP adresses!')
-raw_input('Press Enter to show all results, there are no false positives, but not all adresses may be found.\n')
+input('Press Enter to show all results, there are no false positives, but not all adresses may be found.\n')
 for x in arrAllResponses:
     print(x)
