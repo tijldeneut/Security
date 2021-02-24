@@ -113,7 +113,7 @@ def getVulns(sName, sVersion, sBuild, sIP):
         elif int(sVersion.split('.')[0]) == 7:
             if int(sBuild) < 16850804: print(sVuln)
     ## CVE-2020-3952: vCenter Authentication Bypass via vmdir (TCP/389)
-    sVuln = '[!!] ' + sIP + ' may be vulnerable to CVE-2020-3952: Authentication Bypass in case the system was updated'
+    sVuln = '[!!] ' + sIP + ' may be vulnerable to CVE-2020-3952: Authentication Bypass in case the system was upgraded in the past'
     if 'vCenter' in sName:
         if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 7:
             if int(sBuild) < 15976714: print(sVuln)
@@ -135,6 +135,16 @@ def getVulns(sName, sVersion, sBuild, sIP):
         if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 5:
             if int(sBuild) < 5973321: print(sVuln)
         if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 0: print(sVuln)
+    ## CVE-2021-21972: vCenter Arbitrary File Upload, resulting in RCE in every version
+    sVuln = '[!!] ' + sIP + ' is vulnerable to CVE-2021-21972: Unauthenticated Arbitrary File Upload and RCE!'
+    if 'vCenter' in sName:
+        if int(sVersion.split('.')[0]) == 7:
+            if int(sBuild) < 17327517: print(sVuln)
+        if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 7:
+            if int(sBuild) < 17138064: print(sVuln)
+        if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 5:
+            if int(sBuild) < 17590285: print(sVuln)
+        #if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 0: print(sVuln)
     return
     
 def main():
