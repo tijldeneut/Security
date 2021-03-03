@@ -141,7 +141,7 @@ def getVulns(sName, sVersion, sBuild, sIP):
         if int(sVersion.split('.')[0]) == 7:
             if int(sBuild) < 17327517: print(sVuln)
         if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 7:
-            if int(sBuild) < 17138064: print(sVuln)
+            if int(sBuild) < 17137327: print(sVuln) # Strictly this should be 17138064, but a bug makes it show up as 17137327
         if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 5:
             if int(sBuild) < 17590285: print(sVuln)
         #if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 0: print(sVuln)
