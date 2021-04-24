@@ -204,7 +204,5 @@ def main():
         print('[+] Detected OWA version number ' + sVersion)
         isVulnerable(sVersion)
         
-    
-
 if __name__ == "__main__":
 	main()
