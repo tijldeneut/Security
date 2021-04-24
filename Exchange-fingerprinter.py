@@ -82,14 +82,18 @@ def isVulnerable(version):
                     print('[+] Unpatched CU4: vulnerable to CVE-2020-0688 (authenticated RCE)')
                     return True
                 else: 
-                    print('[-] Patched version of CU4')
+                    print('[?] Possible authenticated RCE for this CU4: CVE-2020-0688')
+                    print('    Verify with PowerShell command \'Get-Command Exsetup.exe | ForEach {$_.FileVersionInfo}\'')
+                    print('    15.2.529.8 or higher is patched')
                     return False
             elif int(buildnr[2]) == 464:
-                if int(buildnr[3]) < 11: 
+                if 0 < int(buildnr[3]) < 11: 
                     print('[+] Unpatched CU3: vulnerable to CVE-2020-0688 (authenticated RCE)')
                     return True
                 else: 
-                    print('[-] Patched version of CU3')
+                    print('[?] Possible authenticated RCE for this CU3: CVE-2020-0688')
+                    print('    Verify with PowerShell command \'Get-Command Exsetup.exe | ForEach {$_.FileVersionInfo}\'')
+                    print('    15.2.464.11 or higher is patched')
                     return False
             else:
                 print('[+] Vulnerable to CVE-2020-0688 (authenticated RCE)')
@@ -98,11 +102,11 @@ def isVulnerable(version):
             print('[!] Exchange Server 2016 detected')
             ## CVE-2021-28480
             if int(buildnr[2]) <= 2242:
-                print('[?] Possible unauthenticated RCE: CVE-2021-28480,1,2,3.')
+                print('[?] Possible unauthenticated RCE: CVE-2021-28480,1,2,3')
                 print('    Verify with PowerShell command \'Get-Command Exsetup.exe | ForEach {$_.FileVersionInfo}\'')
                 print('    15.1.2242.5 or higher is patched')
             elif int(buildnr[2]) < 2242:
-                print('[-] Confirmed unauthenticated RCE: CVE-2021-28480,1,2,3.')
+                print('[-] Confirmed unauthenticated RCE: CVE-2021-28480,1,2,3')
             ## CVE-2020-0688
             if int(buildnr[2]) > 1913: 
                 #print('[-] Not vulnerable to CVE-2020-0688; > CU16 and up')
@@ -112,14 +116,18 @@ def isVulnerable(version):
                     print('[+] Unpatched CU15: vulnerable to CVE-2020-0688 (authenticated RCE)')
                     return True
                 else: 
-                    print('[-] Patched version of CU15')
+                    print('[?] Possible authenticated RCE for this CU15: CVE-2020-0688')
+                    print('    Verify with PowerShell command \'Get-Command Exsetup.exe | ForEach {$_.FileVersionInfo}\'')
+                    print('    15.1.1913.7 or higher is patched')
                     return False
             elif int(buildnr[2]) == 1847: 
                 if 0 < int(buildnr[3]) < 7:
                     print('[+] Unpatched CU14: vulnerable to CVE-2020-0688 (authenticated RCE)')
                     return True
                 else: 
-                    print('[-] Patched version of CU14')
+                    print('[?] Possible authenticated RCE for this CU14: CVE-2020-0688')
+                    print('    Verify with PowerShell command \'Get-Command Exsetup.exe | ForEach {$_.FileVersionInfo}\'')
+                    print('    15.1.1847.7 or higher is patched')
                     return False
             else:
                 print('[+] Vulnerable to CVE-2020-0688 (authenticated RCE)')
@@ -128,7 +136,7 @@ def isVulnerable(version):
             print('[!] Exchange Server 2013 detected')
             ## CVE-2021-28480
             if int(buildnr[2]) <= 1497:
-                print('[?] Possible unauthenticated RCE: CVE-2021-28480,1,2,3.')
+                print('[?] Possible unauthenticated RCE: CVE-2021-28480,1,2,3')
                 print('    Verify with PowerShell command \'Get-Command Exsetup.exe | ForEach {$_.FileVersionInfo}\'')
                 print('    15.0.1497.15 or higher is patched')
             elif int(buildnr[2]) < 1497:
@@ -137,12 +145,14 @@ def isVulnerable(version):
             if int(buildnr[2]) > 1497: 
                 #print('[-]  Not vulnerable to CVE-2020-0688; > CU24 and up')
                 return False
-            elif int(buildnr[2]) == 149: 
+            elif int(buildnr[2]) == 1497: 
                 if 0 < int(buildnr[3]) < 6:
                     print('[+] Unpatched CU23: vulnerable to CVE-2020-0688 (authenticated RCE)')
                     return True
                 else: 
-                    print('[-] Patched version of CU23')
+                    print('[?] Possible authenticated RCE for this CU23: CVE-2020-0688')
+                    print('    Verify with PowerShell command \'Get-Command Exsetup.exe | ForEach {$_.FileVersionInfo}\'')
+                    print('    15.0.1497.6 or higher is patched')
                     return False
             else:
                 print('[+] Vulnerable to CVE-2020-0688 (authenticated RCE)')
@@ -170,7 +180,7 @@ def isVulnerable(version):
 
 def getVersion(sTarget, oOpener):
     if not sTarget[-1:] == '/': sTarget += '/'
-    if not sTarget[4:].lower() == 'http': sTarget = 'https://' + sTarget
+    if not sTarget[:4].lower() == 'http': sTarget = 'https://' + sTarget
     try:
         sResult = oOpener.open(sTarget + 'owa/auth.owa').read().decode('latin_1')
     except:
