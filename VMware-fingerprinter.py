@@ -7,7 +7,6 @@ from itertools import repeat
 ssl._create_default_https_context = ssl._create_unverified_context ## Disable CA check for SSL Certs
 
 iTimeout = 5
-sIP = '192.168.50.35'
 
 SM_TEMPLATE = b'''<env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <env:Body>
