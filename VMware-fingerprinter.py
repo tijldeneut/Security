@@ -102,7 +102,7 @@ def getVulns(sName, sVersion, sBuild, sIP):
     ##  sVersion = 7.0.1, 6.5.0 ...
     ##  sBuild = 14320388, 17167734 ...
     ## CVE-2020-3992: ESXi RCE via TCP/427 (OpenSLP service)
-    sVuln = '[!!] ' + sIP + ' is vulnerable to CVE-2020-3992: RCE via OpenSLP'
+    sVuln = '[!!] ' + sIP + ' is vulnerable to CVE-2020-3992 and exploitable via CVE-2021-21974: RCE via OpenSLP'
     if 'ESXi' in sName:
         if (int(sVersion.split('.')[0]) < 6) or (int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 0):
             print(sVuln)
@@ -145,6 +145,15 @@ def getVulns(sName, sVersion, sBuild, sIP):
         if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 5:
             if int(sBuild) < 17590285: print(sVuln)
         #if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 0: print(sVuln)
+    ## CVE-2021-21985: RCE in the always enabled vCenter VSAN plugin TCP/443
+    sVuln = '[!!] ' + sIP + ' is vulnerable to CVE-2021-21985: Unauthenticated RCE in the default enabled VSAN plugin!'
+    if 'vCenter' in sName:
+        if int(sVersion.split('.')[0]) == 7:
+            if int(sBuild) < 17958471: print(sVuln)
+        if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 7:
+            if int(sBuild) < 18010531: print(sVuln)
+        if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 5:
+            if int(sBuild) < 17994927: print(sVuln)
     return
     
 def main():
