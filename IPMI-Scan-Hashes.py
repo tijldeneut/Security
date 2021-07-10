@@ -204,7 +204,7 @@ def main():
     bOutput = False
     bScan = False
     ## Banner
-    os.system('cls' if os.name == 'nt' else 'clear')
+    #os.system('cls' if os.name == 'nt' else 'clear')
     print("""
     [*****************************************************************************]
                           --- IPMI Hash Dumper ---
