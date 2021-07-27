@@ -213,7 +213,7 @@ def parseRoutine(regexfile = ''):
 
 ### The program
 ## The Banner
-os.system('cls' if os.name == 'nt' else 'clear')
+#os.system('cls' if os.name == 'nt' else 'clear')
 print("""
 [*****************************************************************************]
                       --- SNMP Automatic Enumeration ---
