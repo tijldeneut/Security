@@ -2,6 +2,7 @@
 --> Please note, unless mentioned otherwise, all scripts work on both Linux and Windows, and for Python2 or 3 (look at the first line)
 * GetNessusHomeCode.py: Automated registration for new Nessus Home Feed license
 * DownloadNessus.py: Automated script for downloading the most recent Nessus version (Linux version only)
+* Live_Browser_Password_Dumper.py: Python3 script to dump/export credentials from Chrome, Edge (new) and Opera, (pip3 install pycryptodome pypiwin32)
 * rdpstrip.py: Automated MitM script for non-NLA Remote Desktop sessions
 * snmpAutoenum.py: Automated, multi-threaded SNMP scanner, including parsing with configurable rules
 * SubnetScanner.py: This script tries to find reachable subnets on a given network
