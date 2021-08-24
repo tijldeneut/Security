@@ -106,4 +106,5 @@ if __name__ == '__main__':
         print('[+] Decrypted ' + str(len(lstChromeCreds)) + ' Opera credentials')
     except: pass
     
-    if(len(sys.argv)<=1): input('All done, press enter')
+    if not oArgs.verbose: print('[!] To print the credentials to terminal, rerun with "--verbose"')
+    if len(sys.argv)<=1: input('[+] All done, press enter')
