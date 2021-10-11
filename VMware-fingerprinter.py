@@ -153,6 +153,13 @@ def getVulns(sName, sVersion, sBuild, sIP):
             if int(sBuild) < 18010531: print(sVuln)
         if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 5:
             if int(sBuild) < 17994927: print(sVuln)
+    ## CVE-2021-22005: File Upload and RCE in the default enabled CEIP on vCenter 6.7 & 7.0
+    sVuln = '[!!] ' + sIP + ' is vulnerable to CVE-2021-22005: Unauthenticated RCE via upload on the default enabled CEIP!'
+    if 'vCenter' in sName:
+        if int(sVersion.split('.')[0]) == 7:
+            if int(sBuild) < 18356314: print(sVuln)
+        if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 7:
+            if int(sBuild) < 18485166: print(sVuln)
     return
     
 def main():
@@ -162,7 +169,7 @@ def main():
               'This script is 100% OPSEC safe!')
     parser = optparse.OptionParser(usage = sUsage)
     parser.add_option('--threads', '-t', metavar='INT', dest='threads', default = 128, help='Amount of threads. Default 64')
-    parser.add_option('--vulns', '-v', dest='vulns', action="store_true", help='Check for common vulns. Default False', default=False)
+    parser.add_option('--vulns', '-v', dest='vulns', action="store_true", help='No check for common vulns. Default True', default=True)
     parser.add_option('--proxy', '-p', metavar='STRING', dest='proxy', help='HTTP proxy (e.g. 127.0.0.1:8080), optional')
     parser.add_option('--verbose', dest='verbose', action="store_true", help='Verbosity. Default False', default=False)
     (options,args) = parser.parse_args()
