@@ -30,18 +30,19 @@ os.system('cls' if os.name == 'nt' else 'clear')
 print("""
 [*****************************************************************************]
                 --- Nessus Legal Home Key Registration ---
-    This script will use the Official Tenable website and a generate legal
+    This script will use the Official Tenable website and generate & legal
                       Nessus HomeFeed Registration Code.
 Only requirement is an internet connection to tenable.com and mailinator.com
                                NO WARRANTIES!
 ______________________/-> Created By Tijl Deneut(c) <-\_______________________
 [*****************************************************************************]
 """)
-strNessusURL = 'https://www.tenable.com/products/nessus/nessus-essentials'
-strToken = ''
-bInteractive = True
+strNessusURL1 = 'https://www.tenable.com/products/nessus/nessus-essentials'
+strNessusURL2 = 'https://www.tenable.com/evaluations/api/v1/nessus-essentials'
+boolInteractive = True
 
-if len(sys.argv) > 1: bInteractive = False
+if len(sys.argv) > 1: boolInteractive = False
+
 
 ## -- Create the cookies and receive CSRF token
 print('--- Connecting to tenable.com')
@@ -50,41 +51,28 @@ import urllib.request, http.cookiejar
 cookjar = http.cookiejar.CookieJar()
 opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookjar))
 opener.addheaders = [('User-Agent','Python')]
-NessusPage = opener.open(strNessusURL)
-NessusResult = NessusPage.readlines()
-for line in NessusResult:
-    if 'token' in line.decode(errors='ignore') and 'input' in line.decode(errors='ignore'):
-        strToken = line.split()[3].split(b'\"')[1]
-print('Done: ' + strToken.decode(errors='ignore'))
+NessusPage = opener.open(strNessusURL1)
 
 ## -- Generate random email
 print('--- Generating random e-mail')
 import random, string
 strRandomEmail = ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(20))
-strRandomEmail = strRandomEmail + '@mailinator.com'
-print('[*] Using "'+strRandomEmail+'"')
+print('[*] Using "' + strRandomEmail + '@mailinator.com"')
 
-## -- Request code (first_name=bla&last_name=bla&email=smdifhmsqifdhmdh%40mailinator.com&org_name=&robot=human&type=homefeed&token=M4zti%2BON6P0rXC90AFtCg1m7Tp%2BoHRQoQhJ%2Fp7gV%2Fz0%3D&country=BE&submit=Register)
+## -- Request code
 print('--- Registering for a code')
 import urllib.parse
-postvalues = {'first_name' : 'Mister',
-          'last_name' : 'Student',
-          'email' : strRandomEmail,
-          'org_name' : '',
-          'robot' : 'human',
-          'type' : 'homefeed',
-          'token' : strToken,
-          'country' : 'AF',
-          'submit' : 'Register'
-           }
+postvalues = {"first_name":"Mister","last_name":"Student","email":strRandomEmail+"@mailinator.com","phone":"","code":"","country":"BE","region":"","zip":"9052","title":"","company":"","consentOptIn":"true","essentialsOptIn":"false","pid":"","utm_source":"","utm_campaign":"","utm_medium":"","utm_content":"","utm_promoter":"","utm_term":"","alert_email":"","_mkto_trk":"","mkt_tok":"","queryParameters":"utm_promoter=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&pid=&lookbook=&product_eval=essentials","referrer":"https://www.tenable.com/products/nessus/nessus-essentials?utm_promoter=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&pid=&lookbook=&product_eval=essentials","lookbook":"","apps":["essentials"],"companySize":"","preferredSiteId":"","tempProductInterest":"Nessus Essentials","partnerId":""}
 postdata = urllib.parse.urlencode(postvalues).encode()
-#NessusRegister = opener.open(strNessusURL, data = postdata, headers={'User-Agent':'Python'})
-NessusRegister = opener.open(strNessusURL, data = postdata)
+NessusRegister = opener.open(strNessusURL2, data = postdata)
+bResult =  NessusRegister.readlines()[0]
+if bResult == b'{"message":"Success"}': print('[+] Registration success!')
+else: print('[-] Registration error: ' + bResult.decode(errors='ignore'))
 
 ## -- Opening the mailinator website
 print('--- Opening browser to mailinator')
 import webbrowser
-strMailinatorURL = 'https://www.mailinator.com/v3/index.jsp?zone=public&query=' + strRandomEmail.split("@")[0] + '#/#inboxpane'
+strMailinatorURL = 'https://www.mailinator.com/v3/index.jsp?zone=public&query=' + strRandomEmail + '#/#inboxpane'
 print('Success, opening the Mailinator webpage, please click the mail header')
 print('Opening ' + strMailinatorURL)
 webbrowser.open_new(strMailinatorURL)
@@ -96,6 +84,6 @@ print('')
 print('Manual Nessus update:')
 print('/opt/nessus/sbin/nessuscli update --all')
 
-if bInteractive: input('When ready press [Enter] to exit')
+if boolInteractive: input('When ready press [Enter] to exit')
 
 exit(0)
