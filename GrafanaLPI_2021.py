@@ -39,7 +39,7 @@ def parseDB(sGrafanaDB):
         print('    Login {} with email {}'.format(lstUser[0], lstUser[1]))
         sHash = lstUser[2]
         sSalt = lstUser[3]
-        sLine = 'sha256:10000:{}:{}\n'.format(base64.b64encode(sSalt.encode()).decode(),base64.b64encode(bytes.fromhex(sHash)).decode())
+        sLine = '{}:sha256:10000:{}:{}\n'.format(lstUser[0], base64.b64encode(sSalt.encode()).decode(), base64.b64encode(bytes.fromhex(sHash)).decode())
         oFile.write(sLine)
     oFile.close()
 
@@ -75,5 +75,5 @@ if __name__ == '__main__':
     parseDB(sTempFile)
     os.remove(sTempFile)
     print('\n[+] All done, saved {}'.format(sHashFile))
-    print('      Next step: "hashcat -m 10900 {} wordlist.txt"'.format(sHashFile))
+    print('      Next step: "hashcat -m 10900 {} wordlist.txt --username"'.format(sHashFile))
     
