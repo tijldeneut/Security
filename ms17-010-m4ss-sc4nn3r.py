@@ -193,7 +193,7 @@ def conn(sTarget):
                         oSock.close()
                         break
                 
-                oSock.send(handle(data, sTarget))
+                oSock.send(handle(data, str(sTarget)))
 
         except Exception as msg:
             oSock.close()
