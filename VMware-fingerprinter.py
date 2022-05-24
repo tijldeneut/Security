@@ -100,7 +100,7 @@ def getVulns(sName, sVersion, sBuild, sIP):
     ##  sName = VMware ESXi or VMware vCenter Server
     ##  sVersion = 7.0.1, 6.5.0 ...
     ##  sBuild = 14320388, 17167734 ...
-    ## CVE-2020-3992: ESXi RCE via TCP/427 (OpenSLP service)
+    ## CVE-2020-3992: ESXi RCE via TCP/427 (OpenSLP service) (https://www.vmware.com/security/advisories/VMSA-2020-0023.html)
     sVuln = '[!!] ' + sIP + ' is vulnerable to CVE-2020-3992 and exploitable via CVE-2021-21974: RCE via OpenSLP'
     if 'ESXi' in sName:
         if (int(sVersion.split('.')[0]) < 6) or (int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 0):
@@ -111,12 +111,12 @@ def getVulns(sName, sVersion, sBuild, sIP):
             if int(sBuild) < 16773714: print(sVuln)
         elif int(sVersion.split('.')[0]) == 7:
             if int(sBuild) < 16850804: print(sVuln)
-    ## CVE-2020-3952: vCenter Authentication Bypass via vmdir (TCP/389)
+    ## CVE-2020-3952: vCenter Authentication Bypass via vmdir (TCP/389) (https://www.vmware.com/security/advisories/VMSA-2020-0006.html)
     sVuln = '[!!] ' + sIP + ' may be vulnerable to CVE-2020-3952: Authentication Bypass in case the system was upgraded in the past'
     if 'vCenter' in sName:
         if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 7:
             if int(sBuild) < 15976714: print(sVuln)
-    ## CVE-2015-2342: vCenter RCE via TCP/9875 (jConsole)
+    ## CVE-2015-2342: vCenter RCE via TCP/9875 (jConsole) (https://www.vmware.com/be/security/advisories/VMSA-2015-0007.html)
     sVuln = '[!!] ' + sIP + ' is vulnerable to CVE-2015-2342: Unauthenticated RCE via jConsole TCP/9875'
     if 'vCenter' in sName:
         if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 0:
@@ -134,7 +134,7 @@ def getVulns(sName, sVersion, sBuild, sIP):
         if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 5:
             if int(sBuild) < 5973321: print(sVuln)
         if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 0: print(sVuln)
-    ## CVE-2021-21972: vCenter Arbitrary File Upload, resulting in RCE in every version
+    ## CVE-2021-21972: vCenter Arbitrary File Upload, resulting in RCE in every version (https://www.vmware.com/security/advisories/VMSA-2021-0002.html)
     sVuln = '[!!] ' + sIP + ' is vulnerable to CVE-2021-21972: Unauthenticated Arbitrary File Upload and RCE!'
     if 'vCenter' in sName:
         if int(sVersion.split('.')[0]) == 7:
@@ -144,7 +144,7 @@ def getVulns(sName, sVersion, sBuild, sIP):
         if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 5:
             if int(sBuild) < 17590285: print(sVuln)
         #if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 0: print(sVuln)
-    ## CVE-2021-21985: RCE in the always enabled vCenter VSAN plugin TCP/443
+    ## CVE-2021-21985: RCE in the always enabled vCenter VSAN plugin TCP/443 (https://www.vmware.com/security/advisories/VMSA-2021-0010.html)
     sVuln = '[!!] ' + sIP + ' is vulnerable to CVE-2021-21985: Unauthenticated RCE in the default enabled VSAN plugin!'
     if 'vCenter' in sName:
         if int(sVersion.split('.')[0]) == 7:
@@ -153,13 +153,22 @@ def getVulns(sName, sVersion, sBuild, sIP):
             if int(sBuild) < 18010531: print(sVuln)
         if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 5:
             if int(sBuild) < 17994927: print(sVuln)
-    ## CVE-2021-22005: File Upload and RCE in the default enabled CEIP on vCenter 6.7 & 7.0
-    sVuln = '[!!] ' + sIP + ' is vulnerable to CVE-2021-22005: Unauthenticated RCE via upload on the default enabled CEIP!'
+    ## CVE-2021-22005: File Upload and RCE in the default enabled CEIP on vCenter 6.7 & 7.0 (https://www.vmware.com/security/advisories/VMSA-2021-0020.html)
+    sVuln = '[!!] ' + sIP + ' is vulnerable to CVE-2021-22005: Unauthenticated File Upload and RCE on the default enabled CEIP!'
     if 'vCenter' in sName:
         if int(sVersion.split('.')[0]) == 7:
             if int(sBuild) < 18356314: print(sVuln)
         if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 7:
             if int(sBuild) < 18485166: print(sVuln)
+    ## CVE-2021-44228: Log4J RCE as limited user on v6.5, v6.7 and v7 (Win+VCSA) (https://www.vmware.com/security/advisories/VMSA-2021-0028.html)
+    sVuln = '[!!] ' + sIP + ' is vulnerable to CVE-2021-44228: RCE as limited user via Log4J'
+    if 'vCenter' in sName:
+        if int(sVersion.split('.')[0]) == 7:
+            if int(sBuild) < 19234570: print(sVuln)
+        if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 7:
+            if int(sBuild) < 19300125: print(sVuln)
+        if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 5:
+            if int(sBuild) < 19261680: print(sVuln)
     return
     
 def main():
