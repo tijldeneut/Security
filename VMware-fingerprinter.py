@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 ## Based on https://github.com/rapid7/metasploit-framework/blob/master/modules/auxiliary/scanner/vmware/esx_fingerprint.rb
 
-import urllib.request, urllib.parse, optparse, ssl
+import optparse, requests
 from multiprocessing.dummy import Pool as ThreadPool
 from itertools import repeat
-ssl._create_default_https_context = ssl._create_unverified_context ## Disable CA check for SSL Certs
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 iTimeout = 5
 
@@ -16,7 +17,7 @@ SM_TEMPLATE = b'''<env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema" xml
       </env:Body>
       </env:Envelope>'''
 
-oHeaders = {'User-Agent' : 'VMware VI Client', 'Content-Type': 'application/soap+xml; charset=utf-8', 'SOAPAction' : ''}
+dicHeaders = {'User-Agent' : 'VMware VI Client', 'Content-Type': 'application/soap+xml; charset=utf-8', 'SOAPAction' : ''}
 
 def getValue(sResponse, sTag = 'vendor'):
     try: return sResponse.split('<' + sTag + '>')[1].split('</' + sTag + '>')[0]
@@ -26,16 +27,14 @@ def getValue(sResponse, sTag = 'vendor'):
 def fingerPrint(listArgs):
     (sIP, boolVerbose, sProxy, boolVulns) = listArgs
     sURL = 'https://' + sIP + '/sdk'
-    oRequest = urllib.request.Request(url = sURL, headers = oHeaders, data = SM_TEMPLATE)
-    if sProxy: oRequest.set_proxy(sProxy, 'http')
     try:
-        oResponse = urllib.request.urlopen(oRequest, timeout = iTimeout)
+        if sProxy: oResponse = requests.post(sURL, verify=False, data=SM_TEMPLATE, proxies={'https':sProxy}, headers = dicHeaders)
+        else: oResponse = requests.post(sURL, verify=False, data=SM_TEMPLATE, headers = dicHeaders)
     except:
         if boolVerbose: print('[-] ' + sIP + ' is unresponsive')
         return
-
-    if oResponse.code == 200:
-        sResult = oResponse.read().decode()
+    if oResponse.status_code == 200:
+        sResult = oResponse.text
         if boolVerbose: print(sResult)
         if not 'VMware' in getValue(sResult, 'vendor'):
             print('[-] ' + sIP + ': Not a VMware system')
@@ -46,7 +45,6 @@ def fingerPrint(listArgs):
             sFull = getValue(sResult, 'fullName')
             print('[+] ' + sIP + ': ' + sFull)
             if boolVulns: getVulns(sName, sVersion, sBuild, sIP)
-            
 
 def getIPs(cidr):
     def ip2bin(ip):
@@ -161,7 +159,7 @@ def getVulns(sName, sVersion, sBuild, sIP):
         if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 7:
             if int(sBuild) < 18485166: print(sVuln)
     ## CVE-2021-44228: Log4J RCE as limited user on v6.5, v6.7 and v7 (Win+VCSA) (https://www.vmware.com/security/advisories/VMSA-2021-0028.html)
-    sVuln = '[!!] ' + sIP + ' is vulnerable to CVE-2021-44228: RCE as limited user via Log4J'
+    sVuln = '[!!] ' + sIP + ' is vulnerable to CVE-2021-44228: RCE as root via Log4J on v6.5, v6.7 and v7.0 on both Windows/VCSA'
     if 'vCenter' in sName:
         if int(sVersion.split('.')[0]) == 7:
             if int(sBuild) < 19234570: print(sVuln)
