@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*- 
 r''' 
-    	Copyright 2021 Photubias(c)
+    	Copyright 2022 Photubias(c)
 
         This program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -23,49 +23,71 @@ r'''
         written by tijl[dot]deneut[at]howest[dot]be for www.ic4.be
 
         This script tries to detect the MS Exchange OWA / ECP version.
-        And also pinpoints a couple of vulnerabilities
-
-        ## INFO:
-        #  CVE-2020-0688 (Authenticated RCE),
-        #   fixed in Exchange 2019 15.2.529.8 & 15.2.464.11
-        #   fixed in Exchange 2016 15.1.1913.7 & 15.1.1847.7
-        #   fixed in Exchange 2013 15.0.1497.6
-        #   fixed in Exchange 2010 14.3.496.0
-        #   Exchange 2007 (8.x) Not Vulnerable
-        #   Exchange 2003 (6.5) Not Vulnerable
-        #   Exchange 2000 (6.0) Not Vulnerable
-        #   Everything older is just version == Exchange version (Not Vulnerable)
-
-        # CVE-2021-28480,1,2,3 (Unauthenticated RCE's)
-        #   fixed in Exchange 2019 15.2.585.9 & 15.2.792.13
-        #   fixed in Exchange 2016 15.1.2242.5 & 15.1.2176.12
-        #   fixed in Exchange 2013 15.0.1497.15
-        #   Everything older not vulnerable
+        And also pinpoints a couple of vulnerabilities (Example: https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-26855)
 
         Exchange Versions   Full builds (https://docs.microsoft.com/en-us/Exchange/new-features/build-numbers-and-release-dates)
-        2019 == 15.2.x.y     CU4 (2019-12-17): 15.2.529.5 (CU3 = 15.2.464.5) (fixed in 529.8 and 464.11)
-        2016 == 15.1.x.y     CU15 (2019-12-17): 15.1.1913.5 (CU14 = 15.1.1847.3) (fixed in 1913.7 and 1847.7)
-        2013 == 15.0.x.y     CU23 (2019-06-18): 15.0.1497.2 (fixed in 1497.6)
-        2010 == 14.x.y.z     Rollup30 (2020-02-11): 14.3.496.0 
+        2019 == 15.2.x.y
+        2016 == 15.1.x.y
+        2013 == 15.0.x.y
+        2010 == 14.x.y.z     Rollup32 (2021-03-02): 14.3.513.0 
         2007 == 8.x.y.z      Rollup23 (2017-03-21): 8.3.517.0
-        2003 == 6.5.x
-        2000 == 6.0.x
+        2003 == 6.5.x        Post-SP2: (2008-08): 6.5.7654.4
+        2000 == 6.0.x        Post-SP3: (2008-08): 6.0.6620.7
         Everything older is just version nr == Exchange version
 '''
-import urllib, argparse, sys, ssl, http.cookiejar
+import urllib, argparse, ssl, http.cookiejar
+lstPatchedProxyLogon = {
+    '2019':{'221.18':'RTM','330.11':'CU1','397.11':'CU2','464.15':'CU3','529.13':'CU4','595.8':'CU5','659.12':'CU6','721.13':'CU7','792.10':'CU8'},
+    '2016':{'1415.10':'CU8','1466.16':'CU9','1531.12':'CU10','1591.18':'CU11','1713.10':'CU12','1779.8':'CU13','1847.12':'CU14','1913.12':'CU15','1979.8':'CU16','2044.13':'CU17','2106.13':'CU18','2176.9':'CU19'},
+    '2013':{'1395.12':'CU21','1473.6':'CU22','1497.12':'CU23'}
+    }
+lstPatchedProxyShell = {
+    '2019':{'792.13':'CU8','858.10':'CU9'},
+    '2016':{'2176.12':'CU19','2242.8':'CU20'},
+    '2013':{'1497.15':'CU23'}
+}
+lstPatchedProxyNotShell = {
+    '2019':{'986.30':'CU11','1118.13':'CU12'},
+    '2016':{'2375.32':'CU22','2507.13':'CU23'},
+    '2013':{'1497.41':'CU23'}
+}
 
 def isVulnerable(version):
+    def isItVuln(sMajor, sMinor, sBuild, lstVerify): ## E.g. ('2016', '2106', '12')
+        iHighestListedMinor = 0
+        for x in lstVerify[sMajor]:
+            if int(x.split('.')[0]) > iHighestListedMinor: iHighestListedMinor = int(x.split('.')[0])
+            if x.split('.')[0] == str(sMinor):
+                if int(sBuild) < int(x.split('.')[1]): return (lstVerify[sMajor][x],'vuln') ## CU in list but older version: vulnerable
+                else: return (lstVerify[sMajor][x],'patched') ## CU in list but not vulnerable: patched
+        ## CU not in list: patched if larger than highest minor
+        if int(sMinor) > iHighestListedMinor: return (None, 'patched') ## Technically not patched but the CU was never vulnerable
+        return (None, 'vuln')
     buildnr = version.split('.')
-    try:
-        int(buildnr[2])
+    try: int(buildnr[2])
     except:
         print('[!] Too old to confirm any vulnerabilities')
         return False
     if(len(buildnr) < 3): buildnr.append(0)
-    if(len(buildnr) < 4): buildnr.append(0)
+    if(len(buildnr) < 4): 
+        buildnr.append(0)
+        print('[!] Warning! Did not find exact build number (which includes a 4th digit), unstable vulnerability checker')
+    
     if buildnr[0] == '15': ## 2013, 2016 or 2019
         if buildnr[1] == '2':
-            print('[!] Exchange Server 2019 detected')
+            print('[+] Exchange Server 2019 detected')
+            ## CVE-2022-41082 (ProxyNotShell)
+            sResult = isItVuln('2019', buildnr[2], buildnr[3], lstPatchedProxyNotShell)
+            if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2022-41082/41040 (Authenticated RCE, also called ProxyNotShell)'.format(sResult[0]))
+            elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2022-41082/41040 (Authenticated RCE, also called ProxyNotShell)')
+            ## CVE-2021-33766 (ProxyShell)
+            sResult = isItVuln('2019', buildnr[2], buildnr[3], lstPatchedProxyShell)
+            if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2021-33766/34473/34523/31207 (Unauthenticated RCE, also called ProxyShell)'.format(sResult[0]))
+            elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2021-33766/34473/34523/31207 (Unauthenticated RCE, also called ProxyShell)')
+            ## CVE-2021-26855 (ProxyLogon)
+            sResult = isItVuln('2019', buildnr[2], buildnr[3], lstPatchedProxyLogon)
+            if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2021-26855/27065 (Unauthenticated RCE, also called ProxyLogon)'.format(sResult[0]))
+            elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2021-26855/27065 (Unauthenticated RCE, also called ProxyLogon)')
             ## CVE-2021-28480
             if int(buildnr[2]) <= 858:
                 print('[?] Possible unauthenticated RCE: CVE-2021-28480,1,2,3.')
@@ -74,10 +96,7 @@ def isVulnerable(version):
             elif int(buildnr[2]) < 858:
                 print('[+] Confirmed unauthenticated RCE: CVE-2021-28480,1,2,3.')
             ## CVE-2020-0688
-            if int(buildnr[2]) > 529: 
-                #print('[-] Not vulnerable to CVE-2020-0688; > CU5 and up')
-                return False
-            elif int(buildnr[2]) == 529:
+            if int(buildnr[2]) == 529:
                 if 0 < int(buildnr[3]) < 8: 
                     print('[+] Unpatched CU4: vulnerable to CVE-2020-0688 (authenticated RCE)')
                     return True
@@ -99,7 +118,20 @@ def isVulnerable(version):
                 print('[+] Vulnerable to CVE-2020-0688 (authenticated RCE)')
                 return True
         elif buildnr[1] == '1':
-            print('[!] Exchange Server 2016 detected')
+            print('[+] Exchange Server 2016 detected')
+           ## CVE-2022-41082 (ProxyNotShell)
+            sResult = isItVuln('2016', buildnr[2], buildnr[3], lstPatchedProxyNotShell)
+            if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2022-41082/41040 (Authenticated RCE, also called ProxyNotShell)'.format(sResult[0]))
+            elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2022-41082/41040 (Authenticated RCE, also called ProxyNotShell)')
+            #elif sResult[0] and sResult[1] == 'patched': print('[!] Congrats, I found a patched {}'.format(sResult[0]))
+            ## CVE-2021-33766 (ProxyShell)
+            sResult = isItVuln('2016', buildnr[2], buildnr[3], lstPatchedProxyShell)
+            if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2021-33766/34473/34523/31207 (Unauthenticated RCE, also called ProxyShell)'.format(sResult[0]))
+            elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2021-33766/34473/34523/31207 (Unauthenticated RCE, also called ProxyShell)')
+            ## CVE-2021-26855 (ProxyLogon)
+            sResult = isItVuln('2016', buildnr[2], buildnr[3], lstPatchedProxyLogon)
+            if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2021-26855/27065 (Unauthenticated RCE, also called ProxyLogon)'.format(sResult[0]))
+            elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2021-26855/27065 (Unauthenticated RCE, also called ProxyLogon)')
             ## CVE-2021-28480
             if int(buildnr[2]) <= 2242:
                 print('[?] Possible unauthenticated RCE: CVE-2021-28480,1,2,3')
@@ -133,7 +165,19 @@ def isVulnerable(version):
                 print('[+] Vulnerable to CVE-2020-0688 (authenticated RCE)')
                 return True
         elif buildnr[1] == '0':
-            print('[!] Exchange Server 2013 detected')
+            print('[+] Exchange Server 2013 detected')
+             ## CVE-2022-41082 (ProxyNotShell)
+            sResult = isItVuln('2013', buildnr[2], buildnr[3], lstPatchedProxyNotShell)
+            if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2022-41082/41040 (Authenticated RCE, also called ProxyNotShell)'.format(sResult[0]))
+            elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2022-41082/41040 (Authenticated RCE, also called ProxyNotShell)')
+            ## CVE-2021-33766 (ProxyShell)
+            sResult = isItVuln('2013', buildnr[2], buildnr[3], lstPatchedProxyShell)
+            if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2021-33766/34473/34523/31207 (Unauthenticated RCE, also called ProxyShell)'.format(sResult[0]))
+            elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2021-33766/34473/34523/31207 (Unauthenticated RCE, also called ProxyShell)')
+            ## CVE-2021-26855 (ProxyLogon)
+            sResult = isItVuln('2013', buildnr[2], buildnr[3], lstPatchedProxyLogon)
+            if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2021-26855/27065 (Unauthenticated RCE, also called ProxyLogon)'.format(sResult[0]))
+            elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2021-26855/27065 (Unauthenticated RCE, also called ProxyLogon)')
             ## CVE-2021-28480
             if int(buildnr[2]) <= 1497:
                 print('[?] Possible unauthenticated RCE: CVE-2021-28480,1,2,3')
@@ -158,7 +202,7 @@ def isVulnerable(version):
                 print('[+] Vulnerable to CVE-2020-0688 (authenticated RCE)')
                 return True
     elif buildnr[0] == '14': ## 2010, 2021-28480 not an option here
-        print('[!] Exchange Server 2010 detected')
+        print('[+] Exchange Server 2010 detected')
         ## CVE-2020-0688
         if int(buildnr[2]) >= 496: 
             #print('[-] Not vulnerable to CVE-2020-0688; > Rollup30 and up')
@@ -167,7 +211,7 @@ def isVulnerable(version):
             print('[+] Vulnerable to CVE-2020-0688 (authenticated RCE)')
             return True
     elif buildnr[0] == '8':
-        print('[!] Exchange Server 2007 detected, no recent vulns, but please upgrade')
+        print('[+] Exchange Server 2007 detected, no recent vulns, but please upgrade')
         return True
     elif buildnr[0] == '6' and buildnr[1] == '5':
         print('[+] Exchange Server 2003 detected, no recent vulns, but please upgrade')
@@ -178,14 +222,27 @@ def isVulnerable(version):
     print('[+] Exchange Server '+version +' detected, no recent vulns, but please upgrade')
     return True
 
+def tryGetHeader(sTarget):
+    class NoRedirection(urllib.request.HTTPErrorProcessor):
+        def http_response(self, request, response): return response
+        https_response = http_response
+    oOpener = urllib.request.build_opener(NoRedirection)
+    return oOpener.open(sTarget).headers['X-OWA-Version']
+
 def getVersion(sTarget, oOpener):
     if not sTarget[-1:] == '/': sTarget += '/'
     if not sTarget[:4].lower() == 'http': sTarget = 'https://' + sTarget
+    ## Calling (modern) OWA systems without redirect sets a header with the version
+    sVersion = tryGetHeader(sTarget)
+    if sVersion: return sVersion
+
     try:
-        sResult = oOpener.open(sTarget + 'owa/auth.owa').read().decode('latin_1')
+        oResponse = oOpener.open(sTarget + 'owa/auth.owa')
+        sResult = oResponse.read().decode('latin_1')
     except:
         try:
-            sResult = oOpener.open(sTarget + '/owa/auth/logon.aspx').read().decode('latin_1')
+            oResponse = oOpener.open(sTarget + '/owa/auth/logon.aspx')
+            sResult = oResponse.read().decode('latin_1')
         except:
             print('[!] Error, ' + sTarget + ' not reachable')
     
@@ -205,7 +262,9 @@ def main():
     
     ssl._create_default_https_context = ssl._create_unverified_context
     oCookjar = http.cookiejar.CookieJar()
-    oOpener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(oCookjar))
+    sProxy = '127.0.0.1:8080'
+    oOpener = urllib.request.build_opener(urllib.request.ProxyHandler({'http': '127.0.0.1:8080'}), urllib.request.HTTPCookieProcessor(oCookjar))
+    #oOpener.set_proxy(sProxy, 'http')
 
     sVersion = getVersion(args.target, oOpener)
     if sVersion == 'Unknown':
