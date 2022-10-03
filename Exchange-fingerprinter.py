@@ -51,9 +51,19 @@ lstPatchedProxyNotShell = {
     '2016':{'2375.32':'CU22','2507.13':'CU23'},
     '2013':{'1497.41':'CU23'}
 }
-
+lstPatchedlstCVE202128480 = {
+    '2019':{'792.13':'CU8','858.10':'CU9'},
+    '2016':{'2176.12':'CU19','2242.8':'CU20'},
+    '2013':{'1497.15':'CU23'}
+}
+lstPatchedCVE20200688 = {
+    '2019':{'464.11':'CU3','529.8':'CU4'},
+    '2016':{'1847.7':'CU14','1913.7':'CU15'},
+    '2013':{'1497.6':'CU23'},
+    '2010':{'496.0':'SP3U30'}
+}
 def isVulnerable(version):
-    def isItVuln(sMajor, sMinor, sBuild, lstVerify): ## E.g. ('2016', '2106', '12')
+    def isItVuln(sMajor, sMinor, sBuild, lstVerify): ## E.g. ('2019', '858', '10')
         iHighestListedMinor = 0
         for x in lstVerify[sMajor]:
             if int(x.split('.')[0]) > iHighestListedMinor: iHighestListedMinor = int(x.split('.')[0])
@@ -62,7 +72,7 @@ def isVulnerable(version):
                 else: return (lstVerify[sMajor][x],'patched') ## CU in list but not vulnerable: patched
         ## CU not in list: patched if larger than highest minor
         if int(sMinor) > iHighestListedMinor: return (None, 'patched') ## Technically not patched but the CU was never vulnerable
-        return (None, 'vuln')
+        return (None, 'vuln') ## Not in list means older than any patched version: vulnerable
     buildnr = version.split('.')
     try: int(buildnr[2])
     except:
@@ -80,6 +90,7 @@ def isVulnerable(version):
             sResult = isItVuln('2019', buildnr[2], buildnr[3], lstPatchedProxyNotShell)
             if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2022-41082/41040 (Authenticated RCE, also called ProxyNotShell)'.format(sResult[0]))
             elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2022-41082/41040 (Authenticated RCE, also called ProxyNotShell)')
+            #elif sResult[0] and sResult[1] == 'patched': print('[!] Congrats, I found a patched {}'.format(sResult[0]))
             ## CVE-2021-33766 (ProxyShell)
             sResult = isItVuln('2019', buildnr[2], buildnr[3], lstPatchedProxyShell)
             if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2021-33766/34473/34523/31207 (Unauthenticated RCE, also called ProxyShell)'.format(sResult[0]))
@@ -89,41 +100,19 @@ def isVulnerable(version):
             if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2021-26855/27065 (Unauthenticated RCE, also called ProxyLogon)'.format(sResult[0]))
             elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2021-26855/27065 (Unauthenticated RCE, also called ProxyLogon)')
             ## CVE-2021-28480
-            if int(buildnr[2]) <= 858:
-                print('[?] Possible unauthenticated RCE: CVE-2021-28480,1,2,3.')
-                print('    Verify with PowerShell command \'Get-Command Exsetup.exe | ForEach {$_.FileVersionInfo}\'')
-                print('    15.2.585.9 or higher is patched')
-            elif int(buildnr[2]) < 858:
-                print('[+] Confirmed unauthenticated RCE: CVE-2021-28480,1,2,3.')
+            sResult = isItVuln('2019', buildnr[2], buildnr[3], lstPatchedlstCVE202128480)
+            if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2021-28480/28481/28482/28483 (Unauthenticated RCE)'.format(sResult[0]))
+            elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2021-28480/28481/28482/28483 (Unauthenticated RCE)')
             ## CVE-2020-0688
-            if int(buildnr[2]) == 529:
-                if 0 < int(buildnr[3]) < 8: 
-                    print('[+] Unpatched CU4: vulnerable to CVE-2020-0688 (authenticated RCE)')
-                    return True
-                else: 
-                    print('[?] Possible authenticated RCE for this CU4: CVE-2020-0688')
-                    print('    Verify with PowerShell command \'Get-Command Exsetup.exe | ForEach {$_.FileVersionInfo}\'')
-                    print('    15.2.529.8 or higher is patched')
-                    return False
-            elif int(buildnr[2]) == 464:
-                if 0 < int(buildnr[3]) < 11: 
-                    print('[+] Unpatched CU3: vulnerable to CVE-2020-0688 (authenticated RCE)')
-                    return True
-                else: 
-                    print('[?] Possible authenticated RCE for this CU3: CVE-2020-0688')
-                    print('    Verify with PowerShell command \'Get-Command Exsetup.exe | ForEach {$_.FileVersionInfo}\'')
-                    print('    15.2.464.11 or higher is patched')
-                    return False
-            else:
-                print('[+] Vulnerable to CVE-2020-0688 (authenticated RCE)')
-                return True
+            sResult = isItVuln('2019', buildnr[2], buildnr[3], lstPatchedCVE20200688)
+            if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2020-0688 (Authenticated RCE)'.format(sResult[0]))
+            elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2020-0688 (Authenticated RCE)')
         elif buildnr[1] == '1':
             print('[+] Exchange Server 2016 detected')
            ## CVE-2022-41082 (ProxyNotShell)
             sResult = isItVuln('2016', buildnr[2], buildnr[3], lstPatchedProxyNotShell)
             if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2022-41082/41040 (Authenticated RCE, also called ProxyNotShell)'.format(sResult[0]))
             elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2022-41082/41040 (Authenticated RCE, also called ProxyNotShell)')
-            #elif sResult[0] and sResult[1] == 'patched': print('[!] Congrats, I found a patched {}'.format(sResult[0]))
             ## CVE-2021-33766 (ProxyShell)
             sResult = isItVuln('2016', buildnr[2], buildnr[3], lstPatchedProxyShell)
             if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2021-33766/34473/34523/31207 (Unauthenticated RCE, also called ProxyShell)'.format(sResult[0]))
@@ -133,37 +122,13 @@ def isVulnerable(version):
             if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2021-26855/27065 (Unauthenticated RCE, also called ProxyLogon)'.format(sResult[0]))
             elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2021-26855/27065 (Unauthenticated RCE, also called ProxyLogon)')
             ## CVE-2021-28480
-            if int(buildnr[2]) <= 2242:
-                print('[?] Possible unauthenticated RCE: CVE-2021-28480,1,2,3')
-                print('    Verify with PowerShell command \'Get-Command Exsetup.exe | ForEach {$_.FileVersionInfo}\'')
-                print('    15.1.2242.5 or higher is patched')
-            elif int(buildnr[2]) < 2242:
-                print('[-] Confirmed unauthenticated RCE: CVE-2021-28480,1,2,3')
+            sResult = isItVuln('2016', buildnr[2], buildnr[3], lstPatchedlstCVE202128480)
+            if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2021-28480/28481/28482/28483 (Unauthenticated RCE)'.format(sResult[0]))
+            elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2021-28480/28481/28482/28483 (Unauthenticated RCE)')
             ## CVE-2020-0688
-            if int(buildnr[2]) > 1913: 
-                #print('[-] Not vulnerable to CVE-2020-0688; > CU16 and up')
-                return False
-            elif int(buildnr[2]) == 1913: 
-                if 0 < int(buildnr[3]) < 7:
-                    print('[+] Unpatched CU15: vulnerable to CVE-2020-0688 (authenticated RCE)')
-                    return True
-                else: 
-                    print('[?] Possible authenticated RCE for this CU15: CVE-2020-0688')
-                    print('    Verify with PowerShell command \'Get-Command Exsetup.exe | ForEach {$_.FileVersionInfo}\'')
-                    print('    15.1.1913.7 or higher is patched')
-                    return False
-            elif int(buildnr[2]) == 1847: 
-                if 0 < int(buildnr[3]) < 7:
-                    print('[+] Unpatched CU14: vulnerable to CVE-2020-0688 (authenticated RCE)')
-                    return True
-                else: 
-                    print('[?] Possible authenticated RCE for this CU14: CVE-2020-0688')
-                    print('    Verify with PowerShell command \'Get-Command Exsetup.exe | ForEach {$_.FileVersionInfo}\'')
-                    print('    15.1.1847.7 or higher is patched')
-                    return False
-            else:
-                print('[+] Vulnerable to CVE-2020-0688 (authenticated RCE)')
-                return True
+            sResult = isItVuln('2016', buildnr[2], buildnr[3], lstPatchedCVE20200688)
+            if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2020-0688 (Authenticated RCE)'.format(sResult[0]))
+            elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2020-0688 (Authenticated RCE)')
         elif buildnr[1] == '0':
             print('[+] Exchange Server 2013 detected')
              ## CVE-2022-41082 (ProxyNotShell)
@@ -179,37 +144,21 @@ def isVulnerable(version):
             if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2021-26855/27065 (Unauthenticated RCE, also called ProxyLogon)'.format(sResult[0]))
             elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2021-26855/27065 (Unauthenticated RCE, also called ProxyLogon)')
             ## CVE-2021-28480
-            if int(buildnr[2]) <= 1497:
-                print('[?] Possible unauthenticated RCE: CVE-2021-28480,1,2,3')
-                print('    Verify with PowerShell command \'Get-Command Exsetup.exe | ForEach {$_.FileVersionInfo}\'')
-                print('    15.0.1497.15 or higher is patched')
-            elif int(buildnr[2]) < 1497:
-                print('[-] Confirmed unauthenticated RCE: CVE-2021-28480,1,2,3.')
+            sResult = isItVuln('2013', buildnr[2], buildnr[3], lstPatchedlstCVE202128480)
+            if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2021-28480/28481/28482/28483 (Unauthenticated RCE)'.format(sResult[0]))
+            elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2021-28480/28481/28482/28483 (Unauthenticated RCE)')
             ## CVE-2020-0688
-            if int(buildnr[2]) > 1497: 
-                #print('[-]  Not vulnerable to CVE-2020-0688; > CU24 and up')
-                return False
-            elif int(buildnr[2]) == 1497: 
-                if 0 < int(buildnr[3]) < 6:
-                    print('[+] Unpatched CU23: vulnerable to CVE-2020-0688 (authenticated RCE)')
-                    return True
-                else: 
-                    print('[?] Possible authenticated RCE for this CU23: CVE-2020-0688')
-                    print('    Verify with PowerShell command \'Get-Command Exsetup.exe | ForEach {$_.FileVersionInfo}\'')
-                    print('    15.0.1497.6 or higher is patched')
-                    return False
-            else:
-                print('[+] Vulnerable to CVE-2020-0688 (authenticated RCE)')
-                return True
+            sResult = isItVuln('2013', buildnr[2], buildnr[3], lstPatchedCVE20200688)
+            if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2020-0688 (Authenticated RCE)'.format(sResult[0]))
+            elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2020-0688 (Authenticated RCE)')
+        return
     elif buildnr[0] == '14': ## 2010, 2021-28480 not an option here
         print('[+] Exchange Server 2010 detected')
         ## CVE-2020-0688
-        if int(buildnr[2]) >= 496: 
-            #print('[-] Not vulnerable to CVE-2020-0688; > Rollup30 and up')
-            return False
-        else:
-            print('[+] Vulnerable to CVE-2020-0688 (authenticated RCE)')
-            return True
+        sResult = isItVuln('2010', buildnr[2], buildnr[3], lstPatchedCVE20200688)
+        if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2020-0688 (Authenticated RCE)'.format(sResult[0]))
+        elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2020-0688 (Authenticated RCE)')
+        return
     elif buildnr[0] == '8':
         print('[+] Exchange Server 2007 detected, no recent vulns, but please upgrade')
         return True
@@ -227,12 +176,20 @@ def tryGetHeader(sTarget):
         def http_response(self, request, response): return response
         https_response = http_response
     oOpener = urllib.request.build_opener(NoRedirection)
-    return oOpener.open(sTarget).headers['X-OWA-Version']
+    oResult = oOpener.open(sTarget)
+    sVersion = oResult.headers['X-OWA-Version']
+    sServername = oResult.headers['X-FEServer']
+    if not sVersion: 
+        oResult = oOpener.open(sTarget + 'owa')
+        sVersion = oResult.headers['X-OWA-Version']
+        sServername = oResult.headers['X-FEServer']
+    if sServername: print('[+] Found server hostname: {}'.format(sServername))
+    return sVersion
 
 def getVersion(sTarget, oOpener):
     if not sTarget[-1:] == '/': sTarget += '/'
     if not sTarget[:4].lower() == 'http': sTarget = 'https://' + sTarget
-    ## Calling (modern) OWA systems without redirect sets a header with the version
+    ## Calling (modern) OWA systems without redirect set a header with the version
     sVersion = tryGetHeader(sTarget)
     if sVersion: return sVersion
 
