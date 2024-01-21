@@ -134,7 +134,7 @@ def getVulns(sName, sVersion, sBuild, sIP, sFull):
             if int(sBuild) < 5973321: print(sVuln)
         if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 0: print(sVuln)
     ## CVE-2021-21972: vCenter Arbitrary File Upload, resulting in RCE in every version (https://www.vmware.com/security/advisories/VMSA-2021-0002.html)
-    sVuln = '  [!!] ' + sIP + ' is vulnerable to CVE-2021-21972: Unauthenticated Arbitrary File Upload and RCE!'
+    sVuln = '  [!!] ' + sIP + ' is vulnerable to CVE-2021-21972: Unauthenticated Arbitrary File Upload and RCE'
     if 'vCenter' in sName:
         if int(sVersion.split('.')[0]) == 7:
             if int(sBuild) < 17327517: print(sVuln)
@@ -144,7 +144,7 @@ def getVulns(sName, sVersion, sBuild, sIP, sFull):
             if int(sBuild) < 17590285: print(sVuln)
         #if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 0: print(sVuln)
     ## CVE-2021-21985: RCE in the always enabled vCenter VSAN plugin TCP/443 (https://www.vmware.com/security/advisories/VMSA-2021-0010.html)
-    sVuln = '  [!!] ' + sIP + ' is vulnerable to CVE-2021-21985: Unauthenticated RCE in the default enabled VSAN plugin!'
+    sVuln = '  [!!] ' + sIP + ' is vulnerable to CVE-2021-21985: Unauthenticated RCE in the default enabled VSAN plugin'
     if 'vCenter' in sName:
         if int(sVersion.split('.')[0]) == 7:
             if int(sBuild) < 17958471: print(sVuln)
@@ -153,7 +153,7 @@ def getVulns(sName, sVersion, sBuild, sIP, sFull):
         if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 5:
             if int(sBuild) < 17994927: print(sVuln)
     ## CVE-2021-22005: File Upload and RCE in the default enabled CEIP on vCenter 6.7 & 7.0 (https://www.vmware.com/security/advisories/VMSA-2021-0020.html)
-    sVuln = '  [!!] ' + sIP + ' is vulnerable to CVE-2021-22005: Unauthenticated File Upload and RCE on the default enabled CEIP!'
+    sVuln = '  [!!] ' + sIP + ' is vulnerable to CVE-2021-22005: Unauthenticated File Upload and RCE on the default enabled CEIP'
     if 'vCenter' in sName:
         if int(sVersion.split('.')[0]) == 7:
             if int(sBuild) < 18356314: print(sVuln)
@@ -168,6 +168,20 @@ def getVulns(sName, sVersion, sBuild, sIP, sFull):
             if int(sBuild) < 19300125: print(sVuln)
         if int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 5:
             if int(sBuild) < 19261680: print(sVuln)
+    ## CVE-2023-34048: DCERPC out-of-bounds used in Malware (https://www.vmware.com/security/advisories/VMSA-2023-0023.html) (https://blog.sonicwall.com/en-us/2023/12/vmware-vcenter-dcerpc-dealloc-pointer-manipulation/)
+    sVuln = '  [!!] ' + sIP + ' is vulnerable to CVE-2023-34048: RCE via the DCE RPC protocol on v4, v5, v6, v7 and v8'
+    if 'vCenter' in sName:
+        if int(sVersion.split('.')[0]) == 8 and int(sVersion.split('.')[1]) == 0 and int(sVersion.split('.')[2]) == 2:
+            if int(sBuild) < 22385739: print(sVuln)
+        elif int(sVersion.split('.')[0]) == 8 and int(sVersion.split('.')[1]) == 0 and int(sVersion.split('.')[2]) == 1:
+            if int(sBuild) < 22368047: print(sVuln)
+        elif int(sVersion.split('.')[0]) == 7:
+            if int(sBuild) < 22357613: print(sVuln)
+        elif int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 7:
+            if int(sBuild) < 22509723: print(sVuln)
+        elif int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 5:
+            if int(sBuild) < 22499743: print(sVuln)
+        elif int(sVersion.split('.')[0]) <= 5: print(sVuln) ## 6.0 or lower is always vulnerable
     return
     
 def main():
@@ -177,7 +191,7 @@ def main():
               'This script is 100% OPSEC safe!')
     parser = optparse.OptionParser(usage = sUsage)
     parser.add_option('--threads', '-t', metavar='INT', dest='threads', default = 128, help='Amount of threads. Default 64')
-    parser.add_option('--vulns', '-v', dest='vulns', action="store_true", help='No check for common vulns. Default True', default=True)
+    parser.add_option('--vulns', '-v', dest='vulns', action="store_true", help='Check for common vulns.', default=False)
     parser.add_option('--proxy', '-p', metavar='STRING', dest='proxy', help='HTTP proxy (e.g. 127.0.0.1:8080), optional')
     parser.add_option('--verbose', dest='verbose', action="store_true", help='Verbosity. Default False', default=False)
     (options,args) = parser.parse_args()
