@@ -1,6 +1,6 @@
-#! /usr/bin/env python3
+#!/usr/bin/python3
 ''' 
-	Copyright 2021 Photubias(c)
+	Copyright 2024 Photubias(c)
 
         This program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -16,17 +16,16 @@
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
         File name GetNessusHomeCode.py
-        written by tijl[dot]deneut[at]howest[dot]be
+        written by Photubias(c)
 
         This script will use the Official Tenable website and generate legal
         Nessus HomeFeed Registration Code.
         Only requirement is an internet connection to tenable.com and mailinator.com
 
-        Of course: no warranty when either of them change their website!!
+        Of course: no warranty when either of them change their website :-)
 '''
 ## The Banner
-import os, sys
-os.system('cls' if os.name == 'nt' else 'clear')
+import sys
 print("""
 [*****************************************************************************]
                 --- Nessus Legal Home Key Registration ---
@@ -62,7 +61,7 @@ print('[*] Using "' + strRandomEmail + '@mailinator.com"')
 ## -- Request code
 print('--- Registering for a code')
 import urllib.parse
-postvalues = {"first_name":"Mister","last_name":"Student","email":strRandomEmail+"@mailinator.com","phone":"","code":"","country":"BE","region":"","zip":"9052","title":"","company":"","consentOptIn":"true","essentialsOptIn":"false","pid":"","utm_source":"","utm_campaign":"","utm_medium":"","utm_content":"","utm_promoter":"","utm_term":"","alert_email":"","_mkto_trk":"","mkt_tok":"","queryParameters":"utm_promoter=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&pid=&lookbook=&product_eval=essentials","referrer":"https://www.tenable.com/products/nessus/nessus-essentials?utm_promoter=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&pid=&lookbook=&product_eval=essentials","lookbook":"","apps":["essentials"],"companySize":"","preferredSiteId":"","tempProductInterest":"Nessus Essentials","partnerId":""}
+postvalues = {"first_name":"Mister","last_name":"Student","email":strRandomEmail+"@mailinator.com","phone":"","code":"","country":"BE","region":"","zip":"3852","title":"","company":"","consentOptIn":"true","essentialsOptIn":"false","pid":"","utm_source":"","utm_campaign":"","utm_medium":"","utm_content":"","utm_promoter":"","utm_term":"","alert_email":"","_mkto_trk":"","mkt_tok":"","queryParameters":"utm_promoter=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&pid=&lookbook=&product_eval=essentials","referrer":"https://www.tenable.com/products/nessus/nessus-essentials?utm_promoter=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&pid=&lookbook=&product_eval=essentials","lookbook":"","apps":["essentials"],"companySize":"","preferredSiteId":"","tempProductInterest":"Nessus Essentials","partnerId":""}
 postdata = urllib.parse.urlencode(postvalues).encode()
 NessusRegister = opener.open(strNessusURL2, data = postdata)
 bResult =  NessusRegister.readlines()[0]
@@ -72,7 +71,7 @@ else: print('[-] Registration error: ' + bResult.decode(errors='ignore'))
 ## -- Opening the mailinator website
 print('--- Opening browser to mailinator')
 import webbrowser
-strMailinatorURL = 'https://www.mailinator.com/v3/index.jsp?zone=public&query=' + strRandomEmail + '#/#inboxpane'
+strMailinatorURL = 'https://www.mailinator.com/v4/public/inboxes.jsp?to={}'.format(strRandomEmail)
 print('Success, opening the Mailinator webpage, please click the mail header')
 print('Opening ' + strMailinatorURL)
 webbrowser.open_new(strMailinatorURL)
