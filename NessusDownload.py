@@ -1,6 +1,6 @@
-#! /usr/bin/env python3
+#!/usr/bin/python3
 ''' 
-	Copyright 2021 Photubias(c)
+	Copyright 2024 Photubias(c)
 
         This program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -16,17 +16,17 @@
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
         File name GetNessusHomeCode.py
-        written by tijl[dot]deneut[at]howest[dot]be
+        written by Photubias(c)
 
         This script will use the Official Tenable website and download Nessus
         Only requirement is an internet connection to tenable.com
 
-        Of course: no warranty when the website is changed!!
+        Of course: no warranty in case the API is changed
+	Run with any extra parameter to download (x64), install and 
+            generate the startup script
 '''
 ## The Banner
-#import os, sys, urllib2, cookielib, urllib, json
 import os, sys, json, urllib.request, http.cookiejar
-os.system('cls' if os.name == 'nt' else 'clear')
 print("""
 [*****************************************************************************]
                   --- Nessus Linux Debian deb downloader ---
@@ -37,12 +37,10 @@ ______________________/-> Created By Tijl Deneut(c) <-\_______________________
 [*****************************************************************************]
 """)
 
-strNessusURL = 'https://www.tenable.com/downloads/nessus'
 strNessusURL = 'https://www.tenable.com/downloads/api/v1/public/pages/nessus'
 strDownloadID32 = ''
 strDownloadID64 = ''
 strAgreeURL = 'https://www.tenable.com/downloads/pages/60/downloads/{DownloadID}/get_download_file'
-strNessusDownloadURL = 'https://tenable-downloads-production.s3.amazonaws.com/uploads/download/file/'
 strNessusDownloadURL = 'https://www.tenable.com/downloads/api/v1/public/pages/nessus/downloads/xxxxxx/download?i_agree_to_tenable_license_agreement=true'
 bInteractive = True
 
@@ -59,12 +57,12 @@ opener.addheaders = [('User-Agent','Python')]
 NessusList = opener.open(strNessusURL)
 jsonArr = json.loads(NessusList.read())
 for el in jsonArr['downloads']:
-    if 'Kali' in el['description'] and '32-bit' in el['description']:
+    if 'Debian' in el['description'] and '32-bit' in el['description']:
         try: strFile32bit ## If already defined, do not overwrite var
         except NameError:
             strFile32bit = el['file']
             strFile32bitID = str(el['id'])
-    if 'Kali' in el['description'] and 'AMD64' in el['description']:
+    if 'Debian' in el['description'] and 'AMD64' in el['description']:
         try: strFile64bit
         except NameError:
             strFile64bit = el['file']
