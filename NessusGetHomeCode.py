@@ -19,7 +19,7 @@
         written by Photubias(c)
 
         This script will use the Official Tenable website and generate legal
-        Nessus HomeFeed Registration Code.
+        Nessus Essentials Registration Code.
         Only requirement is an internet connection to tenable.com and mailinator.com
 
         Of course: no warranty when either of them change their website :-)
@@ -30,10 +30,10 @@ print("""
 [*****************************************************************************]
                 --- Nessus Legal Home Key Registration ---
     This script will use the Official Tenable website and generate & legal
-                      Nessus HomeFeed Registration Code.
+                      Nessus Essentials Registration Code.
 Only requirement is an internet connection to tenable.com and mailinator.com
                                NO WARRANTIES!
-______________________/-> Created By Tijl Deneut(c) <-\_______________________
+_______________________/-> Created By Photubias(c) <-\________________________
 [*****************************************************************************]
 """)
 strNessusURL1 = 'https://www.tenable.com/products/nessus/nessus-essentials'
@@ -61,7 +61,7 @@ print('[*] Using "' + strRandomEmail + '@mailinator.com"')
 ## -- Request code
 print('--- Registering for a code')
 import urllib.parse
-postvalues = {"first_name":"Mister","last_name":"Student","email":strRandomEmail+"@mailinator.com","phone":"","code":"","country":"BE","region":"","zip":"3852","title":"","company":"","consentOptIn":"true","essentialsOptIn":"false","pid":"","utm_source":"","utm_campaign":"","utm_medium":"","utm_content":"","utm_promoter":"","utm_term":"","alert_email":"","_mkto_trk":"","mkt_tok":"","queryParameters":"utm_promoter=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&pid=&lookbook=&product_eval=essentials","referrer":"https://www.tenable.com/products/nessus/nessus-essentials?utm_promoter=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&pid=&lookbook=&product_eval=essentials","lookbook":"","apps":["essentials"],"companySize":"","preferredSiteId":"","tempProductInterest":"Nessus Essentials","partnerId":""}
+postvalues = {"first_name":"Mister","last_name":"Student","email":strRandomEmail+"@mailinator.com","phone":"","code":"","country":"BE","region":"","zip":"3052","title":"","company":"","consentOptIn":"true","essentialsOptIn":"false","pid":"","utm_source":"","utm_campaign":"","utm_medium":"","utm_content":"","utm_promoter":"","utm_term":"","alert_email":"","_mkto_trk":"","mkt_tok":"","queryParameters":"utm_promoter=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&pid=&lookbook=&product_eval=essentials","referrer":"https://www.tenable.com/products/nessus/nessus-essentials?utm_promoter=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&pid=&lookbook=&product_eval=essentials","lookbook":"","apps":["essentials"],"companySize":"","preferredSiteId":"","tempProductInterest":"Nessus Essentials","partnerId":""}
 postdata = urllib.parse.urlencode(postvalues).encode()
 NessusRegister = opener.open(strNessusURL2, data = postdata)
 bResult =  NessusRegister.readlines()[0]
