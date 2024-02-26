@@ -18,3 +18,4 @@ https://www.exploit-db.com/exploits/48535
 * VMware-fingerprinter.py: Automated, multi-threaded VMware enumeration scanner, including a couple more critical vulnerability detections
 * CVE-2021-21972.py: Exploit & checker for VMware vCenter Unauthenticated Upload & RCE, should work in one way or another against vCenter Server 6.5 up to 7.0
 * ArpEnum.py: Quickly find hosts on a local network via ARP
+* FortiGate-Live-IOC-Checker.py: Given correct credentials, this script verifies files and dates for known IOC's for COATHANGER and CVE-2022-42475
