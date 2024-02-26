@@ -16,7 +16,7 @@ r'''
         You should have received a copy of the GNU General Public License
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
         
-        File name SSH-fingerprinter.py
+        File name FortiGate-Live-IOC-Checker.py
         written by Tijl Deneut
 
 '''
