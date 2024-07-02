@@ -28,6 +28,7 @@ r'''
         #   fixed in libssh 0.8.4
         #   Only libssh is vulnerable, libssh2 is not
         # CVE-2023-38408 (RCE) for OpenSSH < 9.3p2
+        # CVE-2024-6387 (RCE) for OpenSSH < 4.4p1 and 8.5p1 < 9.8p1 (9.8p1 is patched)
 '''
 import argparse, sys, socket
 from multiprocessing.dummy import Pool as ThreadPool
@@ -79,8 +80,7 @@ def getIPs(cidr):
 
 def vulnByBanner(sBanner, sIP, iPort):
     ## CVE-2018-10933
-    boolVuln = False
-    boolPatched = False
+    boolVuln = boolPatched = False
     if 'libssh' in sBanner.lower():
         if '0.6' in sBanner: boolVuln = True
         elif '0.7' in sBanner and int(sBanner.split('.')[-1]) >= 6: boolPatched = True
@@ -88,10 +88,9 @@ def vulnByBanner(sBanner, sIP, iPort):
         elif '0.8' in sBanner and int(sBanner.split('.')[-1]) >= 4: boolPatched = True
         elif '0.8' in sBanner: boolVuln = True
     if boolVuln: print('[!]    Connection {}:{} is vulnerable to CVE-2018-10933 (Unauthenticated Remote Code Execution)'.format(sIP, iPort))
-    elif boolPatched: print('[!]    Connection {}:{} is patched'.format(sIP, iPort))
+    elif boolPatched: print('[!]    Connection {}:{} is patched for CVE-2018-10933'.format(sIP, iPort))
     ## CVE-2023-38408
-    boolVuln = False
-    boolPatched = False
+    boolVuln = boolPatched = False
     try:
         if ('openssh') and ('ubuntu' or 'debian') in sBanner.lower():
             iMaj = int(sBanner.lower().split('openssh_')[1].split('.')[0])
@@ -100,6 +99,18 @@ def vulnByBanner(sBanner, sIP, iPort):
                 boolVuln = True
     except: pass
     if boolVuln: print('[!]    Connection {}:{} is vulnerable to CVE-2023-38408 (Authenticated Session takeover)'.format(sIP, iPort))
+    ## CVE-2024-6387
+    boolVuln = boolPatched = False
+    try:
+        if ('openssh') in sBanner.lower():
+            iMaj = int(sBanner.lower().split('openssh_')[1].split('.')[0])
+            iMin = int(sBanner.lower().split('openssh_')[1].split('.')[1][0])
+            if (iMaj < 4): boolVuln = True  ## Everything before OpenSSH 4.4p1
+            elif (iMaj == 4 and iMin <= 4): boolVuln = True ## After 4.4p1 it is patched
+            elif (iMaj == 8 and iMin >= 5): boolVuln = True ## Again vuln after 8.5p1
+            elif (iMaj == 9 and iMin <= 7): boolVuln = True ## Before 9.7p1
+    except: pass
+    if boolVuln: print('[!]    Connection {}:{} is vulnerable to CVE-2024-6387 (Unauth RCE based on CVE-2006-5051: "regreSSHion")'.format(sIP, iPort))
     return
 
 def tryCVE_2018_10933(sIP, iPort, boolVerbose, sCommand = 'hostname'):
