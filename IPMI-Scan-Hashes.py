@@ -15,7 +15,7 @@
         You should have received a copy of the GNU General Public License
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-        This should work on Linux & Windows using Python2
+        This should work on Linux & Windows using Python3
         
         File name GetIPMIHashes.py
         written by Photubias
