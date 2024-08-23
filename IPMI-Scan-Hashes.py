@@ -18,7 +18,7 @@
         This should work on Linux & Windows using Python2
         
         File name GetIPMIHashes.py
-        written by Phobuties
+        written by Photubias
 
         --- IPMI Unauthenticated Hash Dumper ---
         Walks through most known default usernames to retrieve hashes
