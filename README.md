@@ -1,5 +1,5 @@
 # GeneralSecurityScripts
---> Please note, unless mentioned otherwise, all scripts work on both Linux and Windows, and for Python2 or 3 (look at the first line)
+--> Please note, unless mentioned otherwise, all scripts work on both Linux and Windows
 * GetNessusHomeCode.py: Automated registration for new Nessus Home Feed license
 * DownloadNessus.py: Automated script for downloading the most recent Nessus version (Linux version only)
 * Live_Browser_Password_Dumper.py: Python3 script to dump/export credentials from Chrome, Edge (new) and Opera, (pip3 install pycryptodome pypiwin32)
@@ -14,8 +14,9 @@
 * CVE-2020-3952.py: Native exploit script for vCenter Server 6.7 random user adding and escalation (Authentication Bypass), mirror: 
 https://www.exploit-db.com/exploits/48535
 * CVE-2021-2109.py: Exploit script for WebLogic 14.1.1.0 and JDK's under 6u201, 7u191, 8u182 & 11.0.1 (Authenticated RCE), mirror: https://www.exploit-db.com/exploits/49461
-* Exchange-fingerprinter.py: Grab the version number from any reachable Exchange server and verify two vulnerabilities
-* VMware-fingerprinter.py: Automated, multi-threaded VMware enumeration scanner, including a couple more critical vulnerability detections
-* CVE-2021-21972.py: Exploit & checker for VMware vCenter Unauthenticated Upload & RCE, should work in one way or another against vCenter Server 6.5 up to 7.0
+* Exchange-fingerprinter.py: Grab the version number from any reachable Exchange server and OPSEC safe, critical vulnerability detections
+* VMware-fingerprinter.py: Automated, multi-threaded VMware enumeration scanner, including OPSEC safe, critical vulnerability detections
+* CVE-2021-21972.py: Exploit & checker for VMware vCenter Unauthenticated Upload & RCE, should work in one way or another against vCenter Server 6.5 up to 7.0 (newer versions untested)
 * ArpEnum.py: Quickly find hosts on a local network via ARP
 * FortiGate-Live-IOC-Checker.py: Given correct credentials, this script verifies files and dates for known IOC's for COATHANGER and CVE-2022-42475
+* iDRAC-fingerprinter.py: Version enumerator for iDRAC systems (currently iDRAC8 & iDRAC9) including OPSEC safe, critical vulnerability detections
