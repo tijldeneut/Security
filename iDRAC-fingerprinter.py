@@ -24,16 +24,14 @@
 
         --- Dell iDRAC Fingerprinter ---
         integrated Dell Remote Access Controller
-        This script tries to detect the iDRAC version, currently only works for iDRAC8 & iDRAC9
-        --> If more are available for a test, they will be added
-
-        
+        This script tries to detect the iDRAC version, currently only works for iDRAC7+ (iDRAC6 does not allow firmware enumeration)
+        --> If more are available for a test, they will be added        
 '''
 import optparse, requests, json, datetime, os
 from multiprocessing.dummy import Pool as ThreadPool
 from itertools import repeat
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
+requests.warnings.filterwarnings('ignore', category=DeprecationWarning) 
 
 iTimeout = 10
 
@@ -41,10 +39,27 @@ dicHeaders = {'User-Agent' : r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWe
 sExportFileName = '{}-iDRACs.txt'.format(datetime.datetime.now().strftime(r'%Y%m%d-%H%M%S'))
 _lstToWrite = []
 
+class CustomHTTPAdapter(requests.adapters.HTTPAdapter):
+    def init_poolmanager(self, *args, **kwargs):
+        context = requests.ssl.create_default_context()
+        context.set_ciphers('ALL:@SECLEVEL=0')
+        context.check_hostname = False
+        context.minimum_version = requests.ssl.TLSVersion.SSLv3
+        super().init_poolmanager(*args, **kwargs, ssl_context=context)
+
 def fingerPrint(listArgs):
     (sIP, boolVerbose, sProxy, boolVulns, boolExport) = listArgs
     global _lstToWrite
-    def getPage(sURL):
+    def getPage(sURL): ## Works on older SSLv3 systems
+        oSession = requests.Session()
+        oSession.mount('https://', CustomHTTPAdapter())
+        try:
+            if sProxy: oResponse = oSession.get(sURL, verify=False, proxies={'https':sProxy}, headers = dicHeaders, timeout = iTimeout)
+            else: oResponse = oSession.get(sURL, verify=False, headers = dicHeaders, timeout = iTimeout)
+            return oResponse
+        except:
+            return None
+    def getPageOrg(sURL):
         try:
             if sProxy: oResponse = requests.get(sURL, verify=False, proxies={'https':sProxy}, headers = dicHeaders, timeout = iTimeout)
             else: oResponse = requests.get(sURL, verify=False, headers = dicHeaders, timeout = iTimeout)
@@ -67,23 +82,39 @@ def fingerPrint(listArgs):
     ## Currently only iDRAC 8 & iDRAC 9 supported
     sURL = 'https://' + sIP
     #if boolVerbose: print(f'[!] Scanning URL {sURL}')
-    ## iDRAC 8 attempt
-    oResponse = getPage(sURL + '/locale/locale_en.json')
-    if oResponse and oResponse.status_code == 200:
+    ## iDRAC 6 attempt (no unauthenticated Firmware Version here)
+    oResponse = getPage(sURL + '/login.html')
+    if oResponse and oResponse.status_code == 200 and not 'idrac7' in oResponse.text.lower():
         sResult = oResponse.text
-        oJson = json.loads(sResult)
-        if oJson['localeString']['gen_iDrac8']:
-            oResponse = getPage(sURL + '/session?aimGetProp=hostname,gui_str_title_bar,OEMHostName,fwVersion,sysDesc')
-            if oResponse:
-                oJson = json.loads(oResponse.text)['aimGetProp']
-                if boolVerbose: print(oJson)
-                sHostname = oJson['hostname']
-                sFWversion = oJson['fwVersion']
-                sSystem = oJson['sysDesc']
-                if boolExport: _lstToWrite.append(f'{sIP};iDRAC8;{sSystem};{sHostname};{sFWversion}\n')
-                print('[+] {}: {} ({}, iDRAC8, Firmware v{})'.format(sIP, sHostname, sSystem, sFWversion))
-                if boolVulns: getVulns(sHostname, 'iDRAC8', sFWversion, sIP, sSystem)
-                return
+        if 'idrac6' in sResult.lower():
+            sFWversion = 'Unknown'
+            sSystem = sHostname = sLicense = ''
+            for sLine in sResult.split('\n'):
+                if 'var tmphostname' in sLine.lower(): 
+                    sHostname = sLine.split('"')[1].strip()
+                elif 'integrated dell remote access controller 6' in sLine.lower(): 
+                    sLicense = sLine.split(r'- ')[1].split(r'<')[0]
+            if boolExport: _lstToWrite.append(f'{sIP};iDRAC6 {sLicense};{sSystem};{sHostname};{sFWversion}\n')
+            print('[+] {}: {} (iDRAC6 {}, Firmware {})'.format(sIP, sHostname, sLicense, sFWversion))
+        return
+    ## iDRAC 7 & 8 attempt
+    oResponse = getPage(sURL + '/data?get=prodServerGen')
+    if oResponse and oResponse.status_code == 200:
+        if '12g' in oResponse.text.lower(): sIDRACVersion = 'iDRAC7'
+        else: sIDRACVersion = 'iDRAC8'
+        oResponse = getPage(sURL + '/data?get=prodClassName')
+        sLicense = oResponse.text.split(r'<prodClassName>')[1].split(r'</prodClassName>')[0]
+        oResponse = getPage(sURL + '/session?aimGetProp=hostname,gui_str_title_bar,OEMHostName,fwVersion,sysDesc')
+        if oResponse:
+            oJson = json.loads(oResponse.text)['aimGetProp']
+            if boolVerbose: print(oJson)
+            sHostname = oJson['hostname']
+            sFWversion = oJson['fwVersion']
+            sSystem = oJson['sysDesc']
+            if boolExport: _lstToWrite.append(f'{sIP};{sIDRACVersion} {sLicense};{sSystem};{sHostname};{sFWversion}\n')
+            print('[+] {}: {} ({}, {} {}, Firmware v{})'.format(sIP, sHostname, sSystem, sIDRACVersion, sLicense, sFWversion))
+            if boolVulns: getVulns(sHostname, '{} {}'.format(sIDRACVersion, sLicense), sFWversion, sIP, sSystem)
+            return
 
     ## iDRAC 9 attempt
     oResponse = getPage(sURL + '/restgui/locale/strings/locale_str_en.json')
@@ -155,9 +186,11 @@ def verifyCVE_2018_1207(sIP, boolExploit = False, sProxy = None):
     sURL = f'https://{sIP}/cgi-bin/login?LD_DEBUG=files'
     dicNewHeaders = dicHeaders
     dicNewHeaders['Accept'] = ''
-    if sProxy: oResponse = requests.get(sURL, verify=False, proxies={'https':sProxy}, headers = dicHeaders, timeout = iTimeout)
-    else: oResponse = requests.get(sURL, verify=False, headers = dicHeaders, timeout = iTimeout)
-    if 'calling init: /lib/' in oResponse.text: print(f'  [!!] {sIP} is definitely vulnerable and can easily be exploited: {sURL}')
+    oSession = requests.Session()
+    oSession.mount('https://', CustomHTTPAdapter())
+    if sProxy: oResponse = oSession.get(sURL, verify=False, proxies={'https':sProxy}, headers = dicHeaders, timeout = iTimeout)
+    else: oResponse = oSession.get(sURL, verify=False, headers = dicHeaders, timeout = iTimeout)
+    if 'calling init: /lib/' in oResponse.text: print(f'  [!!] {sIP} is definitely vulnerable and can be exploited: {sURL}')
     return
 
 def getIPsFromFile(sFile):
@@ -206,6 +239,7 @@ def main():
     parser.add_option('--export', '-e', dest='export', action='store_true', help='Create list of addresses running iDRAC. Default False', default=False)
     parser.add_option('--verbose', '-v', dest='verbose', action='store_true', help='Verbosity. Default False', default=False)
     (options,args) = parser.parse_args()
+    #args.append('172.16.30.47')
     if not args or not len(args) == 1:
         sCIDR = input('[?] Please enter the subnet or IP to scan [192.168.50.0/24] : ')
         if sCIDR == '': sCIDR = '192.168.50.0/24'
