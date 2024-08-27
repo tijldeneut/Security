@@ -100,42 +100,46 @@ def fingerPrint(listArgs):
     ## iDRAC 7 & 8 attempt
     oResponse = getPage(sURL + '/data?get=prodServerGen')
     if oResponse and oResponse.status_code == 200:
-        if '12g' in oResponse.text.lower(): sIDRACVersion = 'iDRAC7'
-        else: sIDRACVersion = 'iDRAC8'
-        oResponse = getPage(sURL + '/data?get=prodClassName')
-        sLicense = oResponse.text.split(r'<prodClassName>')[1].split(r'</prodClassName>')[0]
-        oResponse = getPage(sURL + '/session?aimGetProp=hostname,gui_str_title_bar,OEMHostName,fwVersion,sysDesc')
-        if oResponse:
-            oJson = json.loads(oResponse.text)['aimGetProp']
-            if boolVerbose: print(oJson)
-            sHostname = oJson['hostname']
-            sFWversion = oJson['fwVersion']
-            sSystem = oJson['sysDesc']
-            if boolExport: _lstToWrite.append(f'{sIP};{sIDRACVersion} {sLicense};{sSystem};{sHostname};{sFWversion}\n')
-            print('[+] {}: {} ({}, {} {}, Firmware v{})'.format(sIP, sHostname, sSystem, sIDRACVersion, sLicense, sFWversion))
-            if boolVulns: getVulns(sHostname, '{} {}'.format(sIDRACVersion, sLicense), sFWversion, sIP, sSystem)
-            return
+        try:
+            if '12g' in oResponse.text.lower(): sIDRACVersion = 'iDRAC7'
+            else: sIDRACVersion = 'iDRAC8'
+            oResponse = getPage(sURL + '/data?get=prodClassName')
+            sLicense = oResponse.text.split(r'<prodClassName>')[1].split(r'</prodClassName>')[0]
+            oResponse = getPage(sURL + '/session?aimGetProp=hostname,gui_str_title_bar,OEMHostName,fwVersion,sysDesc')
+            if oResponse:
+                oJson = json.loads(oResponse.text)['aimGetProp']
+                if boolVerbose: print(oJson)
+                sHostname = oJson['hostname']
+                sFWversion = oJson['fwVersion']
+                sSystem = oJson['sysDesc']
+                if boolExport: _lstToWrite.append(f'{sIP};{sIDRACVersion} {sLicense};{sSystem};{sHostname};{sFWversion}\n')
+                print('[+] {}: {} ({}, {} {}, Firmware v{})'.format(sIP, sHostname, sSystem, sIDRACVersion, sLicense, sFWversion))
+                if boolVulns: getVulns(sHostname, '{} {}'.format(sIDRACVersion, sLicense), sFWversion, sIP, sSystem)
+                return
+        except: return
 
     ## iDRAC 9 attempt
     oResponse = getPage(sURL + '/restgui/locale/strings/locale_str_en.json')
     if oResponse and oResponse.status_code == 200:
-        oJson = json.loads(oResponse.text)
-        if oJson['app_title'] == 'iDRAC9':
-            oResponse = getPage(sURL + '/restgui/js/services/resturi.js')
-            sResult = oResponse.text
-            sEndpoint = getBMCInfo(sResult)
-            oResponse = getPage(sURL + sEndpoint)
-            oJson = json.loads(oResponse.text)['Attributes']
-            if boolVerbose: print(oJson)
-            sHostname = oJson['iDRACName']
-            if not 'FwVer' in oJson: sFWversion = getFWViaRedfish(sURL)
-            else: sFWversion = oJson['FwVer']
-            sSystem = oJson['SystemModelName']
-            sLicense = oJson['License']
-            if boolExport: _lstToWrite.append(f'{sIP};iDRAC9 {sLicense};{sSystem};{sHostname};{sFWversion}\n')
-            print('[+] {}: {} ({}, iDRAC9 {}, Firmware v{})'.format(sIP, sHostname, sSystem, sLicense, sFWversion))
-            if boolVulns: getVulns(sHostname, 'iDRAC9 {}'.format(sLicense), sFWversion, sIP, sSystem)
-            return
+        try:
+            oJson = json.loads(oResponse.text)
+            if oJson['app_title'] == 'iDRAC9':
+                oResponse = getPage(sURL + '/restgui/js/services/resturi.js')
+                sResult = oResponse.text
+                sEndpoint = getBMCInfo(sResult)
+                oResponse = getPage(sURL + sEndpoint)
+                oJson = json.loads(oResponse.text)['Attributes']
+                if boolVerbose: print(oJson)
+                sHostname = oJson['iDRACName']
+                if not 'FwVer' in oJson: sFWversion = getFWViaRedfish(sURL)
+                else: sFWversion = oJson['FwVer']
+                sSystem = oJson['SystemModelName']
+                sLicense = oJson['License']
+                if boolExport: _lstToWrite.append(f'{sIP};iDRAC9 {sLicense};{sSystem};{sHostname};{sFWversion}\n')
+                print('[+] {}: {} ({}, iDRAC9 {}, Firmware v{})'.format(sIP, sHostname, sSystem, sLicense, sFWversion))
+                if boolVulns: getVulns(sHostname, 'iDRAC9 {}'.format(sLicense), sFWversion, sIP, sSystem)
+                return
+        except: return
 
 def getIPs(cidr):
     def ip2bin(ip):
