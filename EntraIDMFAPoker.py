@@ -61,9 +61,12 @@ def tryEntraLogin(lstData, resource = None, client = None, boolVerbose = False):
         exit()
     else: return jResp
 
-def showData(jResp):
+def showData(jResp, boolShowTips):
+    def getResource(sAud): return list(WELLKNOWN_RESOURCES.keys())[list(WELLKNOWN_RESOURCES.values()).index(sAud)]
     sAccessToken = jResp['access_token']
     jJWT = json.loads(base64.b64decode(sAccessToken.split('.')[1]+'==='))
+    sAud = jJWT['aud'] if 'aud' in jJWT else None
+    sResource = getResource(sAud) if sAud else None
     sFname = jJWT['given_name'] if 'given_name' in jJWT else None
     sLname = jJWT['family_name'] if 'family_name' in jJWT else None
     sSID = jJWT['onprem_sid'] if 'onprem_sid' in jJWT else None
@@ -71,16 +74,19 @@ def showData(jResp):
     sUnique = jJWT['unique_name'] if 'unique_name' in jJWT else None
     sUPN = jJWT['upn'] if 'upn' in jJWT else None
     sOID = jJWT['oid']
+    if not boolShowTips:
+        print(f'[+] Successfully authenticated without MFA, for more details: rerun with options "-r {sResource}" -s')
     print(f'[+] Account:        {sUPN}')
     print(f'    Tenant ID:      {sTenantID}')
     print(f'    Account ID/OID: {sOID}')
     if sFname and sLname: print(f'    Full name:      {sFname} {sLname}')
     if sSID: print(f'    Onprem SID:     {sSID}')
     if sUnique and sUnique != sUPN: print(f'    Unique Name:    {sUnique}')
-    print(f'    Access Token:   {sAccessToken}')
-    print(f'    Refresh Token:  {jResp['refresh_token']}')
+    if boolShowTips: 
+        print(f'    Access Token:   {sAccessToken}')
+        print(f'    Refresh Token:  {jResp['refresh_token']}')
 
-    if sAccessToken and sOID and sUPN and sTenantID: 
+    if sAccessToken and sOID and sUPN and sTenantID and boolShowTips: 
         print('\nPlease try running, in order of preference:\n')
         print(f'Connect-AzureAD -TenantID {sTenantID} -AccountId {sOID} -AadAccessToken {sAccessToken} ## Requires Install-Module AzureAD')
         print('OR')
@@ -106,6 +112,7 @@ def main():
     parser.add_argument('-p', '--password', help='Password, e.G. MyPass, will be prompted if omitted', default='')
     parser.add_argument('-r', '--resource', help='Initial resource type, default \'aadgraph\'', default='aadgraph')
     parser.add_argument('-c', '--client', help='Initial client type, default \'aadps\'', default='aadps')
+    parser.add_argument('-s', '--showtips', help='If MFA is poked successfully, show redteam usage commands, default: False', action='store_true', default=False)
     parser.add_argument('-f', '--full', help='Walk resource ánd client types, default: resource only', action='store_true', default=False)
     parser.add_argument('-v', '--verbose', help='Verbosity; more info', action='store_true', default=False)
     args = parser.parse_args()
@@ -124,13 +131,13 @@ def main():
                 iCount += 1
                 jResp = tryEntraLogin(lstData, sRes, sCli, args.verbose)
                 if jResp: 
-                    print(f'[+]   Success for resource type {sRes} and client type {sCli}')
-                    showData(jResp)
+                    print(f'[+] Success for resource type {WELLKNOWN_RESOURCES[sRes]} and client type {sCli}')
+                    showData(jResp, args.showtips)
                 print('    Trying next combo; {} out of {}'.format(iCount,len(WELLKNOWN_RESOURCES)*len(WELLKNOWN_CLIENTS)))
                 time.sleep(2)
-        print('[-] No luck, sorry')
+        print('[-] MFA was required for all verified resources. Congratulations, nothing more to do')
         exit()
-    else: showData(jResp)
+    else: showData(jResp, args.showtips)
     exit()
 
 if __name__ == '__main__':
