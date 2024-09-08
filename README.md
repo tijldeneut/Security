@@ -7,6 +7,11 @@
 * CVE-2020-3952.py: Native exploit script for vCenter Server 6.7 random user adding and escalation (Authentication Bypass), mirror: https://www.exploit-db.com/exploits/48535
 * CVE-2021-2109.py: Exploit script for WebLogic 14.1.1.0 and JDK's under 6u201, 7u191, 8u182 & 11.0.1 (Authenticated RCE), mirror: https://www.exploit-db.com/exploits/49461
 * CVE-2021-21972.py: Exploit & checker for VMware vCenter Unauthenticated Upload & RCE, should work in one way or another against vCenter Server 6.5 up to 7.0 (newer versions untested), mirror: https://www.exploit-db.com/exploits/49602
+* CVE-2021-35464.py: ForgeRock Access Manager, Unauthenticated RCE, mirror: https://www.exploit-db.com/exploits/50131
+* CVE-2023-3519-Checker.py: Verify a list of Citrix Netscaler URL's for vulnerability checks
+* CVE-2023-48795-Checker.py: SSH Terrapin Checker, verifies presence of specific protocols
+* CVE-2024-38063-Checker.py: Windows IPv6 vulnerability checker, not 100% reliable yet
+* CVE-2024-38063-DOS.py: Windows IPv6 vulnerability exploiter, Denial-Of-Service
 * EntraIDMFAPoker.py: Verifies for given username/password of MFA is réally enabled on several known EntraID resources
 * Exchange-fingerprinter.py: Grab the version number from any reachable Exchange server and OPSEC safe, critical vulnerability detections
 * FortiGate-Live-IOC-Checker.py: Given correct credentials, this script verifies files and dates for known IOC's for COATHANGER and CVE-2022-42475
