@@ -82,7 +82,7 @@ def showData(jResp, boolShowTips):
     sUPN = jJWT['upn'] if 'upn' in jJWT else None
     sOID = jJWT['oid']
     if not boolShowTips:
-        print(f'[+] Successfully authenticated without MFA, for more details: rerun with options "-r {sResource}" -s')
+        print(f'[+] Successfully authenticated without MFA, for more details: rerun with options "-r {sResource} -s"')
     print(f'[+] Account:        {sUPN}')
     print(f'    Tenant ID:      {sTenantID}')
     print(f'    Account ID/OID: {sOID}')
