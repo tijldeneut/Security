@@ -108,7 +108,7 @@ def main():
     sBanner = r'''
     [*****************************************************************************]
                               --- EntraID MFA poker ---
-    This script verifies of MFA is enforced on all Entra ID resource & client types
+    This script verifies if MFA is enforced on all Entra ID resource & client types
           NOTE: There might be Rate Limiting/Auto Block of IP Addresses
     ______________________/-> Created By Tijl Deneut(c) <-\_______________________
     [*****************************************************************************]
