@@ -43,7 +43,8 @@ WELLKNOWN_CLIENTS = {  ## Or actually Application ID's, Full list: https://learn
     'azps': '1950a258-227b-4e31-a9cf-717495945fc2',     ## Microsoft Azure Powershell
     'edge': 'ecd6b820-32c2-49b6-98a6-444530e5a77a',     ## Microsoft Edge
     'broker': '29d9ed98-a469-4536-ade2-f981bc1d605e',   ## Microsoft Authentication Broker
-    'teams': '1fec8e78-bce4-4aaf-ab1b-5451cc387264'     ## Microsoft Teams
+    'teams': '1fec8e78-bce4-4aaf-ab1b-5451cc387264',    ## Microsoft Teams
+    'intune': 'd4ebce55-015a-49b5-a083-c84d1797ae8c'    ## Microsoft Intune Enrollment
 }
 
 import base64, json, time, argparse, getpass, sys
