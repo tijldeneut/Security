@@ -34,6 +34,7 @@ WELLKNOWN_RESOURCES = {
     'msgraph': 'https://graph.microsoft.com/',
     'azurerm': 'https://management.core.windows.net/',
     'outlook': 'https://outlook.office.com/',
+    'msteams': 'https://api.spaces.skype.com/',
     'devicereg': 'urn:ms-drs:enterpriseregistration.windows.net'
 }
 
