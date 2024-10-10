@@ -1,6 +1,33 @@
-#!/usr/bin/env python3
+#! /usr/bin/python3
+# -*- coding: utf-8 -*- 
 r'''
-CVE-2024-47176
+	Copyright 2024 Photubias(c)
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+    This should work on Linux & Windows using Python3
+        
+    File name CUPS-fingerprinter.py
+    written by Photubias
+
+    --- CUPS Version Fingerprinter ---
+    - Uses UDP/631 (CUPS Browsed daemon)
+    - It triggers a TCP response to a provided IP address
+    - Has a serving component and a scanning component, can be run seperately:
+      * Server (run on reachable system): CUPS-Fingerprinter.py -r -s 0.0.0.0:12345 -n
+      * Scanner: CUPS-Fingerprinter.py -s 11.22.33.44:12345 192.168.20.0/24
+      * Server & Scanner: CUPS-Fingerprinter.py -s 11.22.33.44:12345 -r 192.168.20.0/24
 '''
 import socket, optparse, os, threading, time
 iTimeout= 5
