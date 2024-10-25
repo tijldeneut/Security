@@ -182,6 +182,18 @@ def getVulns(sName, sVersion, sBuild, sIP, sFull):
         elif int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 5:
             if int(sBuild) < 22499743: print(sVuln)
         elif int(sVersion.split('.')[0]) <= 5: print(sVuln) ## 6.0 or lower is always vulnerable
+    ## CVE-2024-22274: Authenticated RCE on vCenter (https://support.broadcom.com/web/ecx/support-content-notification/-/external/content/SecurityAdvisories/0/24308) (https://github.com/mbadanoiu/CVE-2024-22274)
+    ##  Requirements too high, not critical
+    ## CVE-2024-38812: Unauthenticated RCE on vCenter via DCERPC (https://support.broadcom.com/web/ecx/support-content-notification/-/external/content/SecurityAdvisories/0/24968)
+    ##  Found as part of Matrix Cup contest, so a private POC probably exists
+    sVuln = '  [!!] ' + sIP + ' is vulnerable to CVE-2024-38812: Unauthenticated RCE via the DCE RPC protocol on v7 and v8'
+    if 'vCenter' in sName:
+        if int(sVersion.split('.')[0]) == 8 and int(sVersion.split('.')[1]) == 0 and int(sVersion.split('.')[2]) == 3:
+            if int(sBuild) < 24322831: print(sVuln)
+        elif int(sVersion.split('.')[0]) == 8 and int(sVersion.split('.')[1]) == 0 and int(sVersion.split('.')[2]) == 2:
+            if int(sBuild) < 24321653: print(sVuln)
+        elif int(sVersion.split('.')[0]) == 7:
+            if int(sBuild) < 24322018: print(sVuln)
     return
     
 def main():
@@ -190,7 +202,7 @@ def main():
               'When provided with the --vulns parameter it spits out critical vulns based on the buildnr.\n\n'
               'This script is 100% OPSEC safe!')
     parser = optparse.OptionParser(usage = sUsage)
-    parser.add_option('--threads', '-t', metavar='INT', dest='threads', default = 128, help='Amount of threads. Default 64')
+    parser.add_option('--threads', '-t', metavar='INT', dest='threads', default = 128, help='Amount of threads. Default 128')
     parser.add_option('--vulns', '-v', dest='vulns', action="store_true", help='Check for common vulns.', default=False)
     parser.add_option('--proxy', '-p', metavar='STRING', dest='proxy', help='HTTP proxy (e.g. 127.0.0.1:8080), optional')
     parser.add_option('--verbose', dest='verbose', action="store_true", help='Verbosity. Default False', default=False)
