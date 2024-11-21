@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 ## Based on https://github.com/rapid7/metasploit-framework/blob/master/modules/auxiliary/scanner/vmware/esx_fingerprint.rb
 
-import optparse, requests
+import optparse, requests, os
 from multiprocessing.dummy import Pool as ThreadPool
 from itertools import repeat
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -18,6 +18,13 @@ SM_TEMPLATE = b'''<env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema" xml
       </env:Envelope>'''
 
 dicHeaders = {'User-Agent' : 'VMware VI Client', 'Content-Type': 'application/soap+xml; charset=utf-8', 'SOAPAction' : ''}
+
+def getIPsFromFile(sFile):
+    lstLines = open(sFile,'r').read().splitlines()
+    lstIPs = []
+    for sLine in lstLines: ## Line can be an IP or a CIDR
+        for sIP in getIPs(sLine): lstIPs.append(sIP)
+    return lstIPs
 
 def getValue(sResponse, sTag = 'vendor'):
     try: return sResponse.split('<' + sTag + '>')[1].split('</' + sTag + '>')[0]
@@ -185,7 +192,7 @@ def getVulns(sName, sVersion, sBuild, sIP, sFull):
     ## CVE-2024-22274: Authenticated RCE on vCenter (https://support.broadcom.com/web/ecx/support-content-notification/-/external/content/SecurityAdvisories/0/24308) (https://github.com/mbadanoiu/CVE-2024-22274)
     ##  Requirements too high, not critical
     ## CVE-2024-38812: Unauthenticated RCE on vCenter via DCERPC (https://support.broadcom.com/web/ecx/support-content-notification/-/external/content/SecurityAdvisories/0/24968)
-    ##  Found as part of Matrix Cup contest, so a private POC probably exists
+    ##  Found as part of Matrix Cup contest and Broadcom confirmed exploitation in the wild occurs
     sVuln = '  [!!] ' + sIP + ' is vulnerable to CVE-2024-38812: Unauthenticated RCE via the DCE RPC protocol on v7 and v8'
     if 'vCenter' in sName:
         if int(sVersion.split('.')[0]) == 8 and int(sVersion.split('.')[1]) == 0 and int(sVersion.split('.')[2]) == 3:
@@ -197,8 +204,8 @@ def getVulns(sName, sVersion, sBuild, sIP, sFull):
     return
     
 def main():
-    sUsage = ('usage: %prog [options] SUBNET\n'
-              'This script performs enumeration of ESXi & vCenter systems on a given subnet or IP\n'
+    sUsage = ('usage: %prog [options] SUBNET/ADDRESS/FILE\n'
+              'This script performs enumeration of ESXi & vCenter systems on a given subnet, IP or file\n'
               'When provided with the --vulns parameter it spits out critical vulns based on the buildnr.\n\n'
               'This script is 100% OPSEC safe!')
     parser = optparse.OptionParser(usage = sUsage)
@@ -206,18 +213,21 @@ def main():
     parser.add_option('--vulns', '-v', dest='vulns', action="store_true", help='Check for common vulns.', default=False)
     parser.add_option('--proxy', '-p', metavar='STRING', dest='proxy', help='HTTP proxy (e.g. 127.0.0.1:8080), optional')
     parser.add_option('--verbose', dest='verbose', action="store_true", help='Verbosity. Default False', default=False)
-    (options,args) = parser.parse_args()
-    if not args or not len(args) == 1:
+    (options,lstArgs) = parser.parse_args()
+    if not lstArgs or not len(lstArgs) == 1:
         sCIDR = input('[?] Please enter the subnet or IP to scan [192.168.50.0/24] : ')
         if sCIDR == '': sCIDR = '192.168.50.0/24'
     else:
-        sCIDR = args[0]
-
-    IPlist = getIPs(sCIDR)
+        if os.path.isfile(lstArgs[0]):
+            print('[+] Parsing file {} for IP addresses/networks.'.format(lstArgs[0]))
+            lstIPs = getIPsFromFile(lstArgs[0])
+        else:
+            sCIDR = lstArgs[0]
+            lstIPs = getIPs(sCIDR)
+    
     oPool = ThreadPool(int(options.threads))
-    print('[!] Scanning ' + str(len(IPlist)) + ' addresses using up to ' + str(options.threads) + ' threads.')
-    oPool.map(fingerPrint, zip(IPlist, repeat(options.verbose), repeat(options.proxy), repeat(options.vulns)))
-
+    print('[!] Scanning ' + str(len(lstIPs)) + ' addresses using up to ' + str(options.threads) + ' threads.')
+    oPool.map(fingerPrint, zip(lstIPs, repeat(options.verbose), repeat(options.proxy), repeat(options.vulns)))
 
 if __name__ == "__main__":
     main()
