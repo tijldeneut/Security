@@ -2,8 +2,10 @@
 --> Please note, unless mentioned otherwise, all scripts work on both Linux and Windows
 * ArpEnum.py: Quickly find hosts on a local network via ARP
 * CUPS-Fingerprinter.py: Multithreaded and native scanner to get versions of CUPS (UDP/631) (Has Server & Scanning component, can be run separately)
-* CVE-2020-0688.py: Native scanner and exploit (no extra's required) for MS Exchange Server Authenticated RCE/LPE (as System), mirror: https://www.exploit-db.com/exploits/48153
-* CVE-2020-11108.py: Native exploit script for Pi-hole 4.4.0 (Pi-hole v4.4.0-g9e49077, Web v4.3.3,v4.3.2-1-g4f824be, FTL v5.0) for web authenticated RCE + LPE, mirror: https://www.exploit-db.com/exploits/48519
+* CVE-2018-1207.py: iDRAC: RCE for Integrated Dell Remote Access Console
+* CVE-2019-6693.py: FortiGate: Native authenticated information retrieval (clear text passwords) for unaltered FortiGate devices (0-day)
+* CVE-2020-0688.py: MS Exchange Server: Native scanner and exploit (no extra's required) for Authenticated RCE/LPE (as System), mirror: https://www.exploit-db.com/exploits/48153
+* CVE-2020-11108.py: Pi-hole: Native exploit script for Pi-hole 4.4.0 (Pi-hole v4.4.0-g9e49077, Web v4.3.3,v4.3.2-1-g4f824be, FTL v5.0) for web authenticated RCE + LPE, mirror: https://www.exploit-db.com/exploits/48519
 * CVE-2020-12720.py: Native exploit script for vBulletin v5.6.1 (might also work on older versions of v5) for Admin Account takeover using SQLi plus authenticated RCE, mirror: https://www.exploit-db.com/exploits/48472
 * CVE-2020-3952.py: Native exploit script for vCenter Server 6.7 random user adding and escalation (Authentication Bypass), mirror: https://www.exploit-db.com/exploits/48535
 * CVE-2021-2109.py: Exploit script for WebLogic 14.1.1.0 and JDK's under 6u201, 7u191, 8u182 & 11.0.1 (Authenticated RCE), mirror: https://www.exploit-db.com/exploits/49461
@@ -12,7 +14,7 @@
 * CVE-2023-3519-Checker.py: Verify a list of Citrix Netscaler URL's for vulnerability checks
 * CVE-2023-48795-Checker.py: SSH Terrapin Checker, verifies presence of specific protocols
 * CVE-2024-38063-Checker.py: Windows IPv6 vulnerability checker, not 100% reliable yet
-* CVE-2024-38063-DOS.py: Windows IPv6 vulnerability exploiter, Denial-Of-Service
+* CVE-2024-38063-DOS.py: Windows IPv6 vulnerability exploiter, Denial-Of-Service, mirror: https://www.exploit-db.com/exploits/52075
 * EntraIDMFAPoker.py: Verifies for given username/password of MFA is réally enabled on several known EntraID resources
 * Exchange-fingerprinter.py: Grab the version number from any reachable Exchange server and OPSEC safe, critical vulnerability detections
 * FortiGate-Live-IOC-Checker.py: Given correct credentials, this script verifies files and dates for known IOC's for COATHANGER and CVE-2022-42475
