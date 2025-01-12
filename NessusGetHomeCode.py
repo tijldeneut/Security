@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-''' 
-	Copyright 2024 Photubias(c)
+r''' 
+	Copyright 2025 Photubias(c)
 
         This program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 '''
 ## The Banner
 import sys
-print("""
+print(r'''
 [*****************************************************************************]
                 --- Nessus Legal Home Key Registration ---
     This script will use the Official Tenable website and generate & legal
@@ -35,9 +35,9 @@ Only requirement is an internet connection to tenable.com and mailinator.com
                                NO WARRANTIES!
 _______________________/-> Created By Photubias(c) <-\________________________
 [*****************************************************************************]
-""")
-strNessusURL1 = 'https://www.tenable.com/products/nessus/nessus-essentials'
-strNessusURL2 = 'https://www.tenable.com/evaluations/api/v1/nessus-essentials'
+''')
+strNessusURL1 = r'https://www.tenable.com/products/nessus/nessus-essentials'
+strNessusURL2 = r'https://www.tenable.com/evaluations/api/v1/nessus-essentials'
 boolInteractive = True
 
 if len(sys.argv) > 1: boolInteractive = False
@@ -71,17 +71,17 @@ else: print('[-] Registration error: ' + bResult.decode(errors='ignore'))
 ## -- Opening the mailinator website
 print('--- Opening browser to mailinator')
 import webbrowser
-strMailinatorURL = 'https://www.mailinator.com/v4/public/inboxes.jsp?to={}'.format(strRandomEmail)
-print('Success, opening the Mailinator webpage, please click the mail header')
+strMailinatorURL = r'https://www.mailinator.com/v4/public/inboxes.jsp?to={}'.format(strRandomEmail)
+print(r'Success, opening the Mailinator webpage, please click the mail header')
 print('Opening ' + strMailinatorURL)
 webbrowser.open_new(strMailinatorURL)
 print('')
 print('--> The key should look something like AAAA-BBBB-CCCC-DDDD-EEEE')
 print('Register Nessus with this key like this:')
-print('/opt/nessus/sbin/nessuscli fetch --register <key>')
+print(r'/opt/nessus/sbin/nessuscli fetch --register <key>')
 print('')
 print('Manual Nessus update:')
-print('/opt/nessus/sbin/nessuscli update --all')
+print(r'/opt/nessus/sbin/nessuscli update --all')
 
 if boolInteractive: input('When ready press [Enter] to exit')
 
