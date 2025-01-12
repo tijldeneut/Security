@@ -69,8 +69,8 @@ for el in jsonArr['downloads']:
             strFile64bitID = str(el['id'])
 if bInteractive:
     print('--- What file do you want?')
-    print('1: ' + strFile32bit + ' (id ' + strFile32bitID + ')')
-    print('2: ' + strFile64bit + ' (id ' + strFile64bitID + ') [default]')
+    if strFile32bit: print('1: ' + strFile32bit + ' (id ' + strFile32bitID + ')')
+    if strFile64bit: print('2: ' + strFile64bit + ' (id ' + strFile64bitID + ') [default]')
     ans = input('[?] : ')
 if bInteractive and ans == '1':
     strTheFile = strFile32bit
