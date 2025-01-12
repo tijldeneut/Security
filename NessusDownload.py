@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-''' 
+r''' 
 	Copyright 2024 Photubias(c)
 
         This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 '''
 ## The Banner
 import os, sys, json, urllib.request, http.cookiejar
-print("""
+print(r'''
 [*****************************************************************************]
                   --- Nessus Linux Debian deb downloader ---
                This script will use the Official Tenable website.
@@ -35,13 +35,13 @@ print("""
                                NO WARRANTIES!
 ______________________/-> Created By Tijl Deneut(c) <-\_______________________
 [*****************************************************************************]
-""")
+''')
 
 strNessusURL = 'https://www.tenable.com/downloads/api/v1/public/pages/nessus'
 strDownloadID32 = ''
 strDownloadID64 = ''
-strAgreeURL = 'https://www.tenable.com/downloads/pages/60/downloads/{DownloadID}/get_download_file'
-strNessusDownloadURL = 'https://www.tenable.com/downloads/api/v1/public/pages/nessus/downloads/xxxxxx/download?i_agree_to_tenable_license_agreement=true'
+strAgreeURL = r'https://www.tenable.com/downloads/pages/60/downloads/{DownloadID}/get_download_file'
+strNessusDownloadURL = r'https://www.tenable.com/downloads/api/v1/public/pages/nessus/downloads/xxxxxx/download?i_agree_to_tenable_license_agreement=true'
 bInteractive = True
 
 if len(sys.argv) > 1:
