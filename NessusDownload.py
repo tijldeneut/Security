@@ -38,7 +38,7 @@ ______________________/-> Created By Tijl Deneut(c) <-\_______________________
 ''')
 
 strNessusURL = 'https://www.tenable.com/downloads/api/v1/public/pages/nessus'
-strDownloadID32 = strDownloadID64 = ''
+strDownloadID32 = strDownloadID64 = strFile32bitID = strFile64bitID = ''
 strFile32bit = strFile64bit = ''
 strAgreeURL = r'https://www.tenable.com/downloads/pages/60/downloads/{DownloadID}/get_download_file'
 strNessusDownloadURL = r'https://www.tenable.com/downloads/api/v1/public/pages/nessus/downloads/xxxxxx/download?i_agree_to_tenable_license_agreement=true'
