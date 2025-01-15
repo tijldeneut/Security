@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 r''' 
-	Copyright 2024 Photubias(c)
+	Copyright 2025 Photubias(c)
 
         This program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -38,8 +38,7 @@ ______________________/-> Created By Tijl Deneut(c) <-\_______________________
 ''')
 
 strNessusURL = 'https://www.tenable.com/downloads/api/v1/public/pages/nessus'
-strDownloadID32 = strDownloadID64 = strFile32bitID = strFile64bitID = ''
-strFile32bit = strFile64bit = ''
+strFile = strFileID =  None
 strAgreeURL = r'https://www.tenable.com/downloads/pages/60/downloads/{DownloadID}/get_download_file'
 strNessusDownloadURL = r'https://www.tenable.com/downloads/api/v1/public/pages/nessus/downloads/xxxxxx/download?i_agree_to_tenable_license_agreement=true'
 bInteractive = True
@@ -47,7 +46,7 @@ bInteractive = True
 if len(sys.argv) > 1:
     bInteractive = False
     print('--- Extra argument detected.')
-    print('     Performing x64 download AND installation AND script creation')
+    print('     Performing download AND installation AND script creation')
 
 ## Step0: get file names
 print('--- Getting filenames...')
@@ -57,48 +56,30 @@ opener.addheaders = [('User-Agent','Python')]
 NessusList = opener.open(strNessusURL)
 jsonArr = json.loads(NessusList.read())
 for el in jsonArr['downloads']:
-    if 'Debian' in el['description'] and '32-bit' in el['description']:
-        try: strFile32bit ## If already defined, do not overwrite var
-        except NameError:
-            strFile32bit = el['file']
-            strFile32bitID = str(el['id'])
-    if 'Debian' in el['description'] and 'AMD64' in el['description']:
-        try: strFile64bit
-        except NameError:
-            strFile64bit = el['file']
-            strFile64bitID = str(el['id'])
-if bInteractive:
-    print('--- What file do you want?')
-    if strFile32bit: print('1: ' + strFile32bit + ' (id ' + strFile32bitID + ')')
-    if strFile64bit: print('2: ' + strFile64bit + ' (id ' + strFile64bitID + ') [default]')
-    ans = input('[?] : ')
-if bInteractive and ans == '1':
-    strTheFile = strFile32bit
-    strDownloadID = strFile32bitID
-else:
-    strTheFile = strFile64bit
-    strDownloadID = strFile64bitID
+    if 'Kali' in el['description']:
+        if not strFile: ## If already defined, do not overwrite var
+            strFile = el['file']
+            strFileID = str(el['id'])
 
 ## Step2: download
-strNessusDownloadURL = strNessusDownloadURL.replace('xxxxxx',strDownloadID)
+strNessusDownloadURL = strNessusDownloadURL.replace('xxxxxx',strFileID)
 try:
-    print('--- Downloading: ' + strTheFile)
+    print('--- Downloading: ' + strFile)
     #DownloadPage = urllib2.urlopen(urllib2.Request(strNessusDownloadURL, headers={'User-Agent':'Python'}))
     DownloadPage = opener.open(strNessusDownloadURL)
-    myFile = open(strTheFile, "wb")
+    myFile = open(strFile, "wb")
     myFile.write(DownloadPage.read())
     myFile.close()
 except:
     print(sys.exc_info()[0])
     exit(1)
-if bInteractive:
-    print('      Run "dpkg -i ' + strTheFile + '" to install.')
+if bInteractive: print(f'      Run "dpkg -i {strFile}" to install.')
 else: ## Installing and creating script
     print('--- Starting installation ...')
-    os.system('dpkg -i ' + strTheFile + ' && rm ' + strTheFile)
-    os.system('echo \#\!/bin/bash >startNessus.sh')
-    os.system('echo sudo service nessusd start >>startNessus.sh')
-    os.system('echo "firefox https://127.0.0.1:8834 &" >>startNessus.sh')
-    os.system('chmod +x startNessus.sh')
-print('--- All done')
+    #os.system(f'dpkg -i {strFile} && rm {strFile}')
+    os.system(r'echo \#\!/bin/bash >startNessus.sh')
+    os.system(r'echo sudo service nessusd start >>startNessus.sh')
+    os.system(r'echo "firefox https://127.0.0.1:8834 &" >>startNessus.sh')
+    os.system(r'chmod +x startNessus.sh')
+print(r'--- All done')
 exit(0)
