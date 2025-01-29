@@ -1,7 +1,6 @@
 # GeneralSecurityScripts
 --> Please note, unless mentioned otherwise, all scripts work on both Linux and Windows
 * ArpEnum.py: Quickly find hosts on a local network via ARP
-* CUPS-Fingerprinter.py: Multithreaded and native scanner to get versions of CUPS (UDP/631) (Has Server & Scanning component, can be run separately)
 * CVE-2018-1207.py: iDRAC: RCE for Integrated Dell Remote Access Console
 * CVE-2019-6693.py: FortiGate: Native authenticated information retrieval (clear text passwords) for unaltered FortiGate devices (0-day)
 * CVE-2020-0688.py: MS Exchange Server: Native scanner and exploit (no extra's required) for Authenticated RCE/LPE (as System), mirror: https://www.exploit-db.com/exploits/48153
@@ -16,20 +15,24 @@
 * CVE-2024-38063-Checker.py: Windows IPv6 vulnerability checker, not 100% reliable yet
 * CVE-2024-38063-DOS.py: Windows IPv6 vulnerability exploiter, Denial-Of-Service, mirror: https://www.exploit-db.com/exploits/52075
 * EntraIDMFAPoker.py: Verifies for given username/password of MFA is réally enabled on several known EntraID resources
-* Exchange-fingerprinter.py: Grab the version number from any reachable Exchange server and OPSEC safe, critical vulnerability detections
 * FortiGate-Live-IOC-Checker.py: Given correct credentials, this script verifies files and dates for known IOC's for COATHANGER and CVE-2022-42475
 * IPMI-Scan-Hashes.py: Multi-threaded and automated scanner for finding IPMI systems on a subnet and dumping hashes unauthenticated
 * Live_Browser_Password_Dumper.py: Python3 script to dump/export credentials from Chrome, Edge (new) and Opera, (pip3 install pycryptodome pypiwin32)
 * DownloadNessus.py: Automated script for downloading the most recent Nessus version (Linux version only)
 * NessusGetHomeCode.py: Automated registration for Nessus Home Feed license
-* SSH-fingerprinter.py: Multi-threaded scanner for SSH services, shows banners and scans for critical vulnerabilities
 * SubnetScanner.py: This script tries to find reachable subnets on a given network
-* iDRAC-fingerprinter.py: Version enumerator for iDRAC systems (currently iDRAC8 & iDRAC9) including OPSEC safe, critical vulnerability detections
 * ms17-010-m4ss-sc4nn3r.py: Python3 version of official MS17-010 scanner by Claudio Vivian
-* rdpstrip.py: Automated MitM script for non-NLA Remote Desktop sessions
+* rdpstrip.py: Automated MitM script for non-NLA Remote Desktop sessions (python2-only)
 * smb-vuln-cve-2020-0796.nse: NSE script updated for Nmap 7.92, officially by psc4re
-* snmpAutoenum.py: Automated, multi-threaded SNMP scanner, including parsing with configurable rules
 
 Folders: 
 * DumpSomeHashes: Two scripts to demonstrate how Windows retrieves hashes from the registry, also works on Windows 10 >v1607 (AES Encryption)
 * VMware: Automated, multi-threaded VMware enumeration scanner, including OPSEC safe, critical vulnerability detections, and some decryption scripts
+* kaliScripts: some easy-to-use scripts for Kali
+* Fingerprinters:
+  * cups-fingerprinter.py: Multithreaded and native scanner to get versions of CUPS (UDP/631) (Has Server & Scanning component, can be run separately)
+  * rsync-fingerprinter.py: Multithreaded and native scanner to get versions of RSYNC (TCP/873), includes vulnerability scanning and listing modules (shares)
+  * SSH-fingerprinter.py: Multi-threaded scanner for SSH services, shows banners and scans for critical vulnerabilities
+  * snmpAutoenum.py: Automated, multi-threaded SNMP scanner, including parsing with configurable rules
+  * Exchange-fingerprinter.py: Grab the version number from any reachable Exchange server and OPSEC safe, critical vulnerability detections
+  * iDRAC-fingerprinter.py: Version enumerator for iDRAC systems (currently iDRAC8 & iDRAC9) including OPSEC safe, critical vulnerability detections
