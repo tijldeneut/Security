@@ -30,9 +30,10 @@ Folders:
 * VMware: Automated, multi-threaded VMware enumeration scanner, including OPSEC safe, critical vulnerability detections, and some decryption scripts
 * kaliScripts: some easy-to-use scripts for Kali
 * Fingerprinters:
-  * cups-fingerprinter.py: Multithreaded and native scanner to get versions of CUPS (UDP/631) (Has Server & Scanning component, can be run separately)
-  * rsync-fingerprinter.py: Multithreaded and native scanner to get versions of RSYNC (TCP/873), includes vulnerability scanning and listing modules (shares)
+  * cups-fingerprinter.py: Multi-threaded and native scanner to get versions of CUPS (UDP/631) (Has Server & Scanning component, can be run separately)
+  * rsync-fingerprinter.py: Multi-threaded and native scanner to get versions of RSYNC (TCP/873), includes vulnerability scanning and listing modules (shares)
   * SSH-fingerprinter.py: Multi-threaded scanner for SSH services, shows banners and scans for critical vulnerabilities
   * snmpAutoenum.py: Automated, multi-threaded SNMP scanner, including parsing with configurable rules
   * Exchange-fingerprinter.py: Grab the version number from any reachable Exchange server and OPSEC safe, critical vulnerability detections
   * iDRAC-fingerprinter.py: Version enumerator for iDRAC systems (currently iDRAC8 & iDRAC9) including OPSEC safe, critical vulnerability detections
+  * Zabbix-fingerprinter.py: Multi-threaded and native scanner to get versions of Zabbix (HTTP) including some vulnerability scanning
