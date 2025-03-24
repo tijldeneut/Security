@@ -67,7 +67,8 @@ def getIPs(cidr):
         if s == '': s = '0'
         return s
     iplist=[]
-    parts = cidr.split("/")
+    if not '/' in cidr: cidr += '/32'
+    parts = cidr.split('/')
     baseIP = ip2bin(parts[0])
     subnet = int(parts[1])
     if subnet == 32:
