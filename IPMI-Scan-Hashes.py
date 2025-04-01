@@ -1,5 +1,5 @@
 #! /usr/bin/python3
-'''
+r'''
 	Copyright 2024 Photubias(c)
 
         This program is free software: you can redistribute it and/or modify
@@ -211,7 +211,7 @@ def main():
     bOutput = False
     bScan = False
     ## Banner
-    print('''
+    print(r'''
     [*****************************************************************************]
                             --- IPMI Hash Dumper ---
       This script will try multiple users and dump hashes without authentication.
