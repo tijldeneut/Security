@@ -256,7 +256,7 @@ if not which('snmpbulkwalk') and not which('snmpbulkwalk.exe'):
     exit()
 
 ## Optionally parse file with subnets
-if os.path.isfile(args.s): lstIPs = getIPsFromFile(args.s)
+if args.s and os.path.isfile(args.s): lstIPs = getIPsFromFile(args.s)
 else: lstIPs = get_ips(SubNet)
 
 ## Show overview of what to do
