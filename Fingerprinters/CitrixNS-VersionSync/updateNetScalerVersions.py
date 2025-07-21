@@ -162,6 +162,22 @@ def missingBuilds(sFilepath, lstAllBuilds):
         if not boolExists: lstMissingBuilds.append(lstBuild)
     return lstMissingBuilds
 
+def printList(sFilepath):
+    dctVersionsInFile = json.load(open(sFilepath,'r'))
+    lstTimestamps=[]
+    lstUniqueEntries=[]
+    print('rdx_en_date,rdx_en_stamp,version')
+    for dctBuild in dctVersionsInFile:
+        ## Dedupe duplicates (same build date but different build number, only keep highest build)
+        if not dctBuild['timestamp'] in lstTimestamps: 
+            lstTimestamps.append(dctBuild['timestamp'])
+        else: 
+            for x in lstUniqueEntries: 
+                if x['timestamp'] == dctBuild['timestamp']: lstUniqueEntries.remove(x)
+        lstUniqueEntries.append(dctBuild)
+    for dctBuild in lstUniqueEntries: print('{},{},{}'.format(dctBuild['datestamp'], dctBuild['timestamp'], dctBuild['build']))
+    return
+
 def downloadFile(oSession, sURL, sDestination):
     with oSession.get(sURL, stream=True) as oResp:
         oResp.raise_for_status()
@@ -182,9 +198,10 @@ def main():
     oParser.add_option('--versionsfile', '-v', metavar='STRING', dest='versionsfile', help='JSON file with NetScaler builds, default "nsversions.json"', default='nsversions.json')
     oParser.add_option('--download', '-d', dest='download', action='store_true', help='Login and get file location. Requires credentials. Default False', default=False)
     oParser.add_option('--credentialfile', '-c', metavar='STRING', dest='credentialfile', help='Use/safe credentials to this file, default "config.ini"', default='config.ini')
-    oParser.add_option('--autoparse', '-a', dest='autoparse', action='store_true', help='Automatic parse downloaded TGZ files, requires "{}". Default False'.format(sParseTgzFile), default=False)
+    oParser.add_option('--autoparse', '-a', dest='autoparse', action='store_true', help=f'Automatic parse downloaded TGZ files, requires "{sParseTgzFile}". Default False', default=False)
     oParser.add_option('--silent', '-s', dest='silent', action='store_true', help='No questions asked, download all missing files. Default False', default=False)
     oParser.add_option('--proxy', '-p', metavar='STRING', dest='proxy', help='HTTP proxy (e.g. 127.0.0.1:8080), optional')
+    oParser.add_option('--beautify', '-b', dest='beautify', action='store_true', help='when set, this prints all results to copy paste in the script. Default False', default=False)
     oParser.add_option('--verbose', dest='verbose', action='store_true', help='Verbosity. Default False', default=False)
     (oOptions,lstArgs) = oParser.parse_args()
     if oOptions.proxy: dctProxy={'https':oOptions.proxy}
@@ -197,12 +214,15 @@ def main():
     lstMissingBuilds = missingBuilds(sNSVersionsFile, getMostRecentNetscalerBuilds(boolVerbose)) ## lstMissingBuilds is list of lists: (('14.1','47.46',2025-06-13T08:18:24.000Z))
     if not lstMissingBuilds:
         print('[+] Good news, your version list seems up-to-date, nothing to do.')
+        if oOptions.beautify: printList(sNSVersionsFile)
         return
     else:
         sList = ''
         for x in lstMissingBuilds: sList += '{}-{}, '.format(x[0],x[1])
         print(f'[+] There are {len(lstMissingBuilds)} versions missing from "{sNSVersionsFile}": {sList[:-2]}')
-    
+
+    if oOptions.beautify: printList(sNSVersionsFile)
+
     if not oOptions.download: return
     ## Verify some stuff
     if not os.path.isfile(os.path.join(sConfig)): requestDetails(sConfig)
