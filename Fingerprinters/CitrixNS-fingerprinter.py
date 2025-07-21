@@ -28,6 +28,25 @@ r'''
         This script tries to detect the exact NetScaler version 
          based on the timestamp embedded in the header of a small gz-file
         TODO: When the '-v' parameter is added, vulnerabilities are printed too
+
+        ## INFO:
+        # CVE-2023-4966 (CitrixBleed) Unauthenticated infodumper (https://support.citrix.com/support-home/kbsearch/article?articleNumber=CTX579459)
+        #   When configured as a VPN, Proxy or AAA server
+        #   Exploit: https://github.com/Chocapikk/CVE-2023-4966
+        #   fixed in Netscaler 14.1-8.50
+        #   fixed in Netscaler 13.1-49.15
+        #   fixed in Netscaler 13.0-92.19
+        #   fixed in Netscaler 12.1-55.300
+        #   fixed in Netscaler 13.1-37.164 (FIPS version)
+        #   Older versions also vulnerable
+        # CVE-2025-5777 (CitrixBleed 2) Unauthenticated infodumper (https://support.citrix.com/support-home/kbsearch/article?articleNumber=CTX693420)
+        #   When configured as a VPN, Proxy or AAA server
+        #   Exploit: https://github.com/win3zz/CVE-2025-5777
+        #   fixed in Netscaler 14.1-43.56
+        #   fixed in Netscaler 13.1-58.32
+        #   fixed in Netscaler 13.0-37.235
+        #   fixed in Netscaler 12.1-55.328
+        #   Older versions also vulnerable
 '''
 
 import optparse, requests, os, datetime, csv
@@ -168,6 +187,7 @@ rdx_en_date,rdx_en_stamp,version
 2024-07-04 10:41:15+00:00,1720089675,13.0-92.31
 2024-07-04 14:32:40+00:00,1720103560,13.1-53.24
 2024-07-04 16:31:28+00:00,1720110688,14.1-25.56
+2024-07-17 17:53:35+00:00,1721238815,13.1-54.29
 2024-10-11 10:23:04+00:00,1728642184,14.1-29.72
 2024-10-22 01:37:14+00:00,1729561034,14.1-34.42
 2024-10-24 13:43:49+00:00,1729777429,13.1-55.34
@@ -178,6 +198,7 @@ rdx_en_date,rdx_en_stamp,version
 2025-06-10 10:53:47+00:00,1749552827,14.1-43.56
 2025-06-10 20:52:27+00:00,1749588747,13.1-58.32
 2025-06-10 14:02:25+00:00,1749564145,12.1-55.328
+2025-06-18 13:04:11+00:00,1750251851,13.1-59.19
 '''
 dctStampToVersion = {}
 for row in csv.DictReader(CITRIX_NETSCALER_VERSION_CSV.strip().splitlines()): dctStampToVersion[int(row['rdx_en_stamp'])] = row['version']
@@ -190,9 +211,15 @@ def getIPsFromFile(sFile):
         for sIP in getIPs(sLine): lstIPs.append(sIP)
     return lstIPs
 
+def getIPs(sCIDR): ## Could also be a single hostname
+    import ipaddress
+    try: lstIPs = [str(sTarget) for sTarget in list(ipaddress.ip_network(sCIDR, False).hosts())]
+    except: ## Not an IP address but a hostname
+        lstIPs = [sCIDR.replace('http://','').replace('https://','')]
+    return lstIPs
+
 def fingerPrint(listArgs): ## sTarget = either IP or FQDN
-    #(sTarget, boolVerbose, sProxy, boolVulns) = listArgs
-    (sTarget, boolVerbose, sProxy) = listArgs
+    (sTarget, boolVerbose, sProxy, boolVulns) = listArgs
     sURL = 'https://' + sTarget + '/vpn/js/rdx/core/lang/rdx_en.json.gz'
     try:
         if sProxy: oResponse = requests.get(sURL, verify=False, proxies={'https':sProxy}, stream=True)
@@ -211,41 +238,54 @@ def fingerPrint(listArgs): ## sTarget = either IP or FQDN
         iStamp = int.from_bytes(bFileData[4:8], 'little')
         dtStamp = datetime.datetime.fromtimestamp(iStamp, datetime.timezone.utc)
         sVersion = dctStampToVersion.get(iStamp, None)
+    else: return
     if sVersion: print(f'[+] https://{sTarget}: found Citrix Netscaler {sVersion} (Build date: {dtStamp})')
     else: 
         if dtStamp > (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=180)): 
             print(f'[!] https://{sTarget}: found a Citrix Netscaler with (recent) build date {dtStamp}')
         else: 
             print(f'[!] https://{sTarget}: found a Citrix Netscaler with build date {dtStamp}, which seems heavily outdated!')
-    ## TODO: if boolVulns then perform "getVulns"
+    if (boolVulns): getVulns(sVersion.split('-')[0], sVersion.split('-')[-1], sTarget)
     return
 
-def getIPs(sCIDR): ## Could also be a single hostname
-    import ipaddress
-    try: lstIPs = [str(sTarget) for sTarget in list(ipaddress.ip_network(sCIDR, False).hosts())]
-    except: ## Not an IP address but a hostname
-        lstIPs = [sCIDR.replace('http://','').replace('https://','')]
-    return lstIPs
-
 ### Vuln checking based on buildnumbers
-def getVulns(sName, sVersion, sBuild, sTarget, sFull):
-    print(f'[+] {sTarget}: {sFull}')
-    ## CVE-20xx-yyyy: RCE via TCP/zzz (https://<citrix advisary>)
-    sVuln = f'  [!!] {sTarget} is vulnerable to CVE-20xx-yyyy: RCE via xyz'
+def getVulns(sVersion, sBuild, sTarget): ## sVersion example: 12.1, sBuild example: 49.23
+    print(f'[+] {sTarget}; scanning for critical vulnerabilities based on v{sVersion}-{sBuild}')
+    ## CVE-2023-4966: Unauthenticated memory stealer, CitrixBleed (https://support.citrix.com/support-home/kbsearch/article?articleNumber=CTX579459)
+    sVuln = f'  [!!] {sTarget} is vulnerable to CVE-2023-4966: CitrixBleed, unauthenticated memory leak when VPN, AAA or Proxy is enabled'
     
-    if (int(sVersion.split('.')[0]) < 6) or (int(sVersion.split('.')[0]) == 6 and int(sVersion.split('.')[1]) == 0):
-        print(sVuln)
+    if sVersion == '14.1':
+        if int(sBuild.split('.')[0]) < 8 or (int(sBuild.split('.')[0]) == 8 and int(sBuild.split('.')[1]) < 50): print(sVuln)
+    elif sVersion == '13.1':
+        if int(sBuild.split('.')[0]) < 49 or (int(sBuild.split('.')[0]) == 49 and int(sBuild.split('.')[1]) < 15): print(sVuln)
+    elif sVersion == '13.0':
+        if int(sBuild.split('.')[0]) < 92 or (int(sBuild.split('.')[0]) == 92 and int(sBuild.split('.')[1]) < 19): print(sVuln)
+    elif sVersion == '12.1':
+        if int(sBuild.split('.')[0]) < 55 or (int(sBuild.split('.')[0]) == 55 and int(sBuild.split('.')[1]) < 300): print(sVuln)
+    else: print(sVuln) ## Older always vulnerable
+    
+    ## CVE-2025-5777: Unauthenticated memory stealer, CitrixBleed 2 (https://support.citrix.com/support-home/kbsearch/article?articleNumber=CTX693420)
+    sVuln = f'  [!!] {sTarget} is vulnerable to CVE-2025-5777: CitrixBleed 2, unauthenticated memory leak when VPN, AAA or Proxy is enabled'
+    
+    if sVersion == '14.1':
+        if int(sBuild.split('.')[0]) < 43 or (int(sBuild.split('.')[0]) == 43 and int(sBuild.split('.')[1]) < 56): print(sVuln)
+    elif sVersion == '13.1':
+        if int(sBuild.split('.')[0]) < 58 or (int(sBuild.split('.')[0]) == 58 and int(sBuild.split('.')[1]) < 32): print(sVuln)
+    elif sVersion == '13.0':
+        if int(sBuild.split('.')[0]) < 37 or (int(sBuild.split('.')[0]) == 37 and int(sBuild.split('.')[1]) < 235): print(sVuln)
+    elif sVersion == '12.1':
+        if int(sBuild.split('.')[0]) < 55 or (int(sBuild.split('.')[0]) == 55 and int(sBuild.split('.')[1]) < 328): print(sVuln)
+    else: print(sVuln) ## Older always vulnerable
     return
     
 def main():
     sUsage = ('usage: %prog [options] SUBNET/ADDRESS/FILE\n'
               'This script performs enumeration of Citrix Netscaler systems on a given subnet, IP or file\n'
-              'TODO: add vulns\n\n'
-              #'When provided with the --vulns parameter it spits out critical vulns based on the version.\n\n'
-              'This script is 100% OPSEC safe!')
+              'When provided with the --vulns parameter it spits out critical vulns based on the version.\n\n'
+              'This script is 100% OPSEC safe')
     parser = optparse.OptionParser(usage = sUsage)
     parser.add_option('--threads', '-t', metavar='INT', dest='threads', default = 128, help='Amount of threads. Default 128')
-    #parser.add_option('--vulns', '-v', dest='vulns', action='store_true', help='Check for common vulns.', default=False)
+    parser.add_option('--vulns', '-v', dest='vulns', action='store_true', help='Check for critical vulns.', default=False)
     parser.add_option('--proxy', '-p', metavar='STRING', dest='proxy', help='HTTP proxy (e.g. 127.0.0.1:8080), optional')
     parser.add_option('--verbose', dest='verbose', action='store_true', help='Verbosity. Default False', default=False)
     (options,lstArgs) = parser.parse_args()
@@ -263,8 +303,7 @@ def main():
     
     oPool = ThreadPool(int(options.threads))
     print(f'[!] Scanning {len(lstIPs)} addresses using up to {options.threads} threads.')
-    #oPool.map(fingerPrint, zip(lstIPs, repeat(options.verbose), repeat(options.proxy), repeat(options.vulns)))
-    oPool.map(fingerPrint, zip(lstIPs, repeat(options.verbose), repeat(options.proxy)))
+    oPool.map(fingerPrint, zip(lstIPs, repeat(options.verbose), repeat(options.proxy), repeat(options.vulns)))
 
 if __name__ == '__main__':
     main()
