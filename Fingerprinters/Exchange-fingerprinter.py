@@ -26,11 +26,6 @@ r'''
         And also pinpoints a couple of vulnerabilities (Example: https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-26855)
 
         ## INFO:
-        # CVE-2025-49704 (RCE) & CVE-2025-49706 (Spoofing), Unauthenticated RCE
-        #   fixed in Exchange 2019 15.2.1748.26 & 15.2.1544.27 (Patch has build nr 16.0.10417.20027)
-        #   fixed in Exchange 2016 15.1.2507.57 (Patch has build nr 16.0.5508.1000)
-        #   Older not vulnerable
-
         # CVE-2022-41040 (SSRF) & CVE-2022-41082 (RCE) AKA ProxyNotShell, Authenticated RCE
         #   fixed in Exchange 2019 CU11-Sept 15.2.986.>29
         #   fixed in Exchange 2016 CU22-Sept 15.1.2375.>31
@@ -101,10 +96,6 @@ lstPatchedCVE20200688 = {
     '2013':{'1497.6':'CU23'},
     '2010':{'496.0':'SP3U30'}
 }
-lstPatchedCVE202549706 = {
-    '2019':{'1544.27':'CU14','1748.26':'CU15'},
-    '2016':{'2507.57':'CU23'}
-}
 def isVulnerable(version):
     def isItVuln(sMajor, sMinor, sBuild, lstVerify): ## E.g. ('2019', '858', '10')
         iHighestListedMinor = 0
@@ -129,10 +120,6 @@ def isVulnerable(version):
     if buildnr[0] == '15': ## 2013, 2016 or 2019
         if buildnr[1] == '2':
             print('[+] Exchange Server 2019 detected')
-            ## CVE-2025-49704 (RCE) & CVE-2025-49706 (Spoofing)
-            sResult = isItVuln('2019', buildnr[2], buildnr[3], lstPatchedCVE202549706)
-            if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2025-49704/49706 (Unauthenticated RCE, actively exploited)'.format(sResult[0]))
-            elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2025-49704/49706 (Unauthenticated RCE, actively exploited)')
             ## CVE-2022-41082 (ProxyNotShell)
             sResult = isItVuln('2019', buildnr[2], buildnr[3], lstPatchedProxyNotShell)
             if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2022-41082/41040 (Authenticated RCE, also called ProxyNotShell)'.format(sResult[0]))
@@ -156,11 +143,7 @@ def isVulnerable(version):
             elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2020-0688 (Authenticated RCE)')
         elif buildnr[1] == '1':
             print('[+] Exchange Server 2016 detected')
-            ## CVE-2025-49704 (RCE) & CVE-2025-49706 (Spoofing)
-            sResult = isItVuln('2016', buildnr[2], buildnr[3], lstPatchedCVE202549706)
-            if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2025-49704/49706 (Unauthenticated RCE, actively exploited)'.format(sResult[0]))
-            elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2025-49704/49706 (Unauthenticated RCE, actively exploited)')
-            ## CVE-2022-41082 (ProxyNotShell)
+           ## CVE-2022-41082 (ProxyNotShell)
             sResult = isItVuln('2016', buildnr[2], buildnr[3], lstPatchedProxyNotShell)
             if sResult[0] and sResult[1] == 'vuln': print('[!] Unpatched {}: vulnerable to CVE-2022-41082/41040 (Authenticated RCE, also called ProxyNotShell)'.format(sResult[0]))
             elif not sResult[0] and sResult[1] == 'vuln': print('[!] Vulnerable to CVE-2022-41082/41040 (Authenticated RCE, also called ProxyNotShell)')
