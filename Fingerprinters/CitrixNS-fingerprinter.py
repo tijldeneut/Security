@@ -47,6 +47,12 @@ r'''
         #   fixed in Netscaler 13.0-37.235
         #   fixed in Netscaler 12.1-55.328
         #   Older versions also vulnerable
+        # CVE-2025-6543 Unauthenticated Control & DoS (https://support.citrix.com/support-home/kbsearch/article?articleNumber=CTX694788)
+        #   When configured as VPN, Proxy or AAA server
+        #   fixed in Netscaler 14.1-47.46
+        #   fixed in Netscaler 13.1-59.19
+        #   fixed in Netscaler 13.1F-37.236
+        #   Older versions also vulnerable (incl 12.1 & 13.0)
 '''
 
 import optparse, requests, os, datetime, csv
@@ -275,6 +281,15 @@ def getVulns(sVersion, sBuild, sTarget): ## sVersion example: 12.1, sBuild examp
         if int(sBuild.split('.')[0]) < 37 or (int(sBuild.split('.')[0]) == 37 and int(sBuild.split('.')[1]) < 235): print(sVuln)
     elif sVersion == '12.1':
         if int(sBuild.split('.')[0]) < 55 or (int(sBuild.split('.')[0]) == 55 and int(sBuild.split('.')[1]) < 328): print(sVuln)
+    else: print(sVuln) ## Older always vulnerable
+    
+    ## CVE-2025-6543: Unauthenticated Flow Control & DoS (https://support.citrix.com/support-home/kbsearch/article?articleNumber=CTX694788)
+    sVuln = f'  [!!] {sTarget} is vulnerable to CVE-2025-6543: Unauthenticated Flow Control & DoS when VPN, AAA or Proxy is enabled'
+    
+    if sVersion == '14.1':
+        if int(sBuild.split('.')[0]) < 47 or (int(sBuild.split('.')[0]) == 47 and int(sBuild.split('.')[1]) < 46): print(sVuln)
+    elif sVersion == '13.1':
+        if int(sBuild.split('.')[0]) < 59 or (int(sBuild.split('.')[0]) == 59 and int(sBuild.split('.')[1]) < 19): print(sVuln)
     else: print(sVuln) ## Older always vulnerable
     return
     
