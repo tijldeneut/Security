@@ -208,6 +208,8 @@ rdx_en_date,rdx_en_stamp,version
 2025-06-18 13:04:11+00:00,1750251851,13.1-59.19
 2025-08-20 12:23:35+00:00,1755692615,14.1-47.48
 2025-08-20 12:44:46+00:00,1755693886,13.1-59.22
+2025-09-02 07:11:47+00:00,1756797107,14.1-51.72
+2025-09-03 15:24:16+00:00,1756913056,13.1-60.26
 '''
 dctStampToVersion = {}
 for row in csv.DictReader(CITRIX_NETSCALER_VERSION_CSV.strip().splitlines()): dctStampToVersion[int(row['rdx_en_stamp'])] = row['version']
