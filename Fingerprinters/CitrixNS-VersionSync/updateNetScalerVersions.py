@@ -240,13 +240,6 @@ def main():
     oSession, sLoginURL, sXSRF = warmupAndVerify(oSession)
     oSession = doLogin(oSession, sLoginURL, sXSRF, sUsername, sPassword, sTOTP, boolVerbose)
 
-    ## Verifying access to a wellknown page
-    sVersionURL = 'https://www.citrix.com/downloads/citrix-adc/virtual-appliances/vpx-release-14-1-51-72.html'
-    oResponse = accessThisPage(oSession, sVersionURL)
-    if oResponse.status_code != 200:
-        print(f'[-] Access error or URL {sVersionURL} does not exist.')
-        exit(1)
-    
     ## Finding URL and download the first file of the page, which is usually the nCore version
     print(f'[+] Checking {len(lstMissingBuilds)} versions now')
     for lstBuild in lstMissingBuilds:
@@ -279,4 +272,5 @@ def main():
 if __name__ == '__main__':
     main()
     exit(0)
+
 
