@@ -16,7 +16,8 @@ def main(sFilename):
     bNSfile = oNSfile.read()
     tarNSfile = tarfile.open(fileobj=io.BytesIO(bNSfile))
 
-    oRDXfile = tarNSfile.extractfile(tarNSfile.getmember('vpn/js/rdx/core/lang/rdx_en.json.gz'))
+    oRDXMember = tarNSfile.getmember('vpn/js/rdx/core/lang/rdx_en.json.gz')
+    oRDXfile = tarNSfile.extractfile(oRDXMember)
     bRDXfile = oRDXfile.read()
 
     vhash = ''
@@ -28,6 +29,9 @@ def main(sFilename):
                 vhash = vhash.decode()
 
     if bRDXfile.startswith(b'\x1f\x8b\x08\x08') and b'rdx_en.json' in bRDXfile: stamp = int.from_bytes(bRDXfile[4:8], 'little')
+    else: 
+        print('Error: file rdx_en.json.gz is malformed, looking at modification time')
+        stamp = oRDXMember.mtime
     dt = datetime.datetime.fromtimestamp(stamp, datetime.timezone.utc)
     return '{},{},{}'.format(dt, stamp, version)
 
