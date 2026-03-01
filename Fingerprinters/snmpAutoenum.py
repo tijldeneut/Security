@@ -51,7 +51,7 @@ def get_lan_ip():
         interfaces = ["eth0","eth1","eth2","wlan0","wlan1","wifi0","ath0","ath1","ppp0"]
         for ifname in interfaces:
             try:
-                proc = subprocess.Popen(r"ip -4 addr show {} | grep -oP '(?<=inet\s)\d+(\.\d+){3}'".format(ifname),shell=True, stdout=subprocess.PIPE)
+                proc = subprocess.Popen(fr"ip -4 addr show {ifname} | grep -oP '(?<=inet\s)\d+(\.\d+){{3}}'",shell=True, stdout=subprocess.PIPE)
                 ip = proc.stdout.readlines()[0].decode().replace('\n','')
                 break
             except IOError:
@@ -244,7 +244,7 @@ if args.p:
     exit()
 
 if os.name != 'nt' and not args.s:
-    proc = subprocess.Popen(f'ip a | grep -m1 {LocalIP} | cut -d' ' -f6', shell=True, stdout=subprocess.PIPE)
+    proc = subprocess.Popen(f'ip a | grep -m1 {LocalIP} | cut -d" " -f6', shell=True, stdout=subprocess.PIPE)
     SubNet = proc.stdout.readlines()[0].decode().replace('\n','')
 elif os.name == 'nt' and not args.s:
     proc = subprocess.Popen('netsh int ip show addr | findstr /I subnet', shell=True, stdout=subprocess.PIPE)
