@@ -39,13 +39,9 @@ def warmupAndVerify(oSession):
     ## Warming up the Session object
     oSession.get('https://support.citrix.com')          ## Warm up the systems
     oSession.get('https://support.citrix.com/login-sso')
-    dctResp = oSession.get('https://support.citrix.com/assets/config.json').json()
-    if not 'wolkenMasterApiUrl' in dctResp:
-        print('[-] Error A: Login method changed, I cannot work like this :-)')
-        exit()
+    oSession.get('https://support.citrix.com/assets/config.json').json()
     ## Verify SSO details
-    sWolkenURL = dctResp['wolkenMasterApiUrl']
-    dctResp = oSession.get(f'{sWolkenURL}/company/getDomainSsoDetails',headers={'Origin':'https://support.citrix.com','Authorization':'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ7XCJhdXRoXCI6XCJzdXBwb3J0LmNpdHJpeC5jb21cIn0ifQ.RSvetgxqOZmQkiFdmXHbZA20xrsMzn5dgdu1yeDdGt2leImR2szhtrAO7W5rQyO+B_HGFghCmt91h+PoWcmtnA'}).json()
+    dctResp = oSession.get(f'https://wmaster.wolkenservicedesk.com/company/getDomainSsoDetails',headers={'Origin':'https://support.citrix.com','Authorization':'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ7XCJhdXRoXCI6XCJzdXBwb3J0LmNpdHJpeC5jb21cIn0ifQ.RSvetgxqOZmQkiFdmXHbZA20xrsMzn5dgdu1yeDdGt2leImR2szhtrAO7W5rQyO+B_HGFghCmt91h+PoWcmtnA'}).json()
     if not 'data' in dctResp or not 'redirectUri' in dctResp['data']['companyDetails']['ssoConfiguration']:
         print('[-] Error B: Login method changed, I cannot work like this :-)')
         exit()
