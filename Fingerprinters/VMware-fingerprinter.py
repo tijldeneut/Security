@@ -187,6 +187,16 @@ def getVulns(sName, sVersion, sBuild, sIP, sFull):
             if int(sBuild) < 24321653: print(sVuln)
         elif int(sVersion.split('.')[0]) == 7:
             if int(sBuild) < 24322018: print(sVuln)
+	## CVE-2026-59309/59310: Unauthenticated Auth Bypass (HTTPS) and file creation (SYSLOG) on vCenter (https://support.broadcom.com/web/ecx/support-content-notification/-/external/content/SecurityAdvisories/0/38017)
+    ##  Exploited in the wild, no (working) PoC yet
+    sVuln = f'  [!!] {sIP} is vulnerable to CVE-2026-59309/59310: Auth Bypass on HTTPS and unauthenticated file creation via Syslog on v7, v8 and v9'
+    if 'vCenter' in sName:
+        if int(sVersion.split('.')[0]) == 9:
+            if int(sBuild) < 25629530: print(sVuln)
+        elif int(sVersion.split('.')[0]) == 8 and int(sVersion.split('.')[1]) == 0 and int(sVersion.split('.')[2]) == 3:
+            if int(sBuild) < 25600417: print(sVuln)
+        elif int(sVersion.split('.')[0]) == 8: print(sVuln)
+        elif int(sVersion.split('.')[0]) == 7: print(sVuln)
     return
     
 def main():
