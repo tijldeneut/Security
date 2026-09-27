@@ -17,6 +17,7 @@
 * CVE-2024-38063-DOS.py: Windows IPv6 vulnerability exploiter, Denial-Of-Service, mirror: https://www.exploit-db.com/exploits/52075
 * CVE-2025-59287-Checker.py: Python OPSEC Safe verification for the WSUS RCE vulnerability
 * CVE-2025-59287.py: Python OPSEC Safe checker and standalone code executor for the WSUS RCE vulnerability
+* CVE-2026-59310.py: Python checker and Unauth RCE POC for vCenter 7, 8 & 9
 * EntraIDMFAPoker.py: Verifies for given username/password of MFA is réally enabled on several known EntraID resources
 * FortiGate-Live-IOC-Checker.py: Given correct credentials, this script verifies files and dates for known IOC's for COATHANGER and CVE-2022-42475
 * IPMI-Scan-Hashes.py: Multi-threaded and automated scanner for finding IPMI systems on a subnet and dumping hashes unauthenticated
