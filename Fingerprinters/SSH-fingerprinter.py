@@ -1,34 +1,37 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*- 
 r''' 
-    	Copyright 2024 Photubias(c)
+    Copyright 2026 Photubias(c)
 
-        This program is free software: you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation, either version 3 of the License, or
-        (at your option) any later version.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-        You should have received a copy of the GNU General Public License
-        along with this program.  If not, see <http://www.gnu.org/licenses/>.
-        
-        File name SSH-fingerprinter.py
-        written by Tijl Deneut
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    
+    File name SSH-fingerprinter.py
+    written by Tijl Deneut
 
-        This script tries to detect the SSH version and banner.
-        Source (a.o.): https://github.com/leapsecurity/libssh-scanner/raw/master/libsshscan.py
+    This script tries to detect the SSH version and banner.
+    Source (a.o.): https://github.com/leapsecurity/libssh-scanner/raw/master/libsshscan.py
+    It also reads out the authentication options without logging in (pubkey / password / interactive)
+    If password-auth is allowed, it tries out authentication with 300 A chars: sshhole.com (RISK!)
 
-        ## INFO:
-        # CVE-2018-10933 (RCE) for libssh v0.6.0 and up
-        #   fixed in libssh 0.7.6
-        #   fixed in libssh 0.8.4
-        #   Only libssh is vulnerable, libssh2 is not
-        # CVE-2023-38408 (RCE) for OpenSSH < 9.3p2
-        # CVE-2024-6387 (RCE) for OpenSSH < 4.4p1 and 8.5p1 < 9.8p1 (9.8p1 is patched)
+    ## INFO:
+    # CVE-2018-10933 (RCE) for libssh v0.6.0 and up
+    #   fixed in libssh 0.7.6
+    #   fixed in libssh 0.8.4
+    #   Only libssh is vulnerable, libssh2 is not
+    # CVE-2023-38408 (RCE) for OpenSSH < 9.3p2
+    # CVE-2024-6387 (RCE) for OpenSSH < 4.4p1 and 8.5p1 < 9.8p1 (9.8p1 is patched)
+    # CVE-2026-TODO (Auth Bypass) for SSH when not using PAM on Alpine -> sending 300 chars when a username is specified
 '''
 import sys, socket, optparse, os
 from multiprocessing.dummy import Pool as ThreadPool
@@ -38,7 +41,7 @@ except: exit('[-] Error: Paramiko required: python3 -m pip install paramiko')
 
 iTimeout = 2 ## seconds
 
-def getIPs(cidr):
+def getIPs(sCIDR):
     def ip2bin(ip):
         b = ''
         inQuads = ip.split('.')
@@ -66,9 +69,9 @@ def getIPs(cidr):
             while len(s)<d: s = '0' + s
         if s == '': s = '0'
         return s
+    if not '/' in sCIDR: return [sCIDR]
     iplist=[]
-    if not '/' in cidr: cidr += '/32'
-    parts = cidr.split('/')
+    parts = sCIDR.split('/')
     baseIP = ip2bin(parts[0])
     subnet = int(parts[1])
     if subnet == 32:
@@ -150,9 +153,145 @@ def tryCVE_2018_10933(sIP, iPort, boolVerbose, sCommand = 'hostname'):
         if boolVerbose: print(f'[-] Connection {sIP}:{iPort} has general exception: {e}')
     return
 
+def testPassword(sIP, iPort, sUsername, sPassword, boolVerbose=False):
+    oSock = None
+    oTrans = None
+
+    try:
+        oSock = socket.create_connection((sIP, iPort), timeout=iTimeout)
+        oTrans = paramiko.Transport(oSock)
+        oTrans.auth_timeout = iTimeout
+        oTrans.start_client(timeout=iTimeout)
+
+        # Only attempt password authentication.
+        # fallback=False prevents keyboard-interactive fallback.
+        oTrans.auth_password(
+            username=sUsername,
+            password=sPassword,
+            fallback=False
+        )
+
+        print(f'[!]    {sIP}:{iPort} | Password authentication SUCCESSFUL | User: {sUsername}')
+
+        return {'status': 'success'}
+    
+    except paramiko.BadAuthenticationType as e:
+        print(
+            f'[-] {sIP}:{iPort} | Password authentication NOT ALLOWED | '
+            f'Available: {", ".join(e.allowed_types)}'
+        )
+        return {'status': 'not_allowed', 'methods': e.allowed_types}
+
+    except paramiko.ssh_exception.PartialAuthentication as e:
+        print(
+            f'[!] {sIP}:{iPort} | Partial authentication | '
+            f'Additional methods required: {", ".join(e.allowed_types)}'
+        )
+        return {'status': 'partial', 'methods': e.allowed_types}
+
+    except paramiko.AuthenticationException as e:
+        if oTrans and oTrans.is_authenticated():
+            return {'status': 'success'}
+
+        if oTrans and oTrans.is_active():
+            # Server is still connected: authentication was rejected.
+            if boolVerbose:
+                print(
+                    f'[-] {sIP}:{iPort} | Password rejected | '
+                    f'User: {sUsername} | Reason: {e}'
+                )
+            return {'status': 'rejected'}
+
+        else:
+            # Connection was terminated during authentication.
+            if boolVerbose:
+                print(
+                    f'[?] {sIP}:{iPort} | Authentication inconclusive | '
+                    f'Transport closed: {e}'
+                )
+            return {'status': 'inconclusive'}
+
+    except (socket.timeout, socket.error) as e:
+        if boolVerbose: print(f'[-] {sIP}:{iPort} | Connection error: {e}')
+        return {'status': 'error'}
+
+    except paramiko.SSHException as e:
+        if boolVerbose: print(f'[-] {sIP}:{iPort} | SSH error: {e}')
+        return {'status': 'error'}
+
+    finally:
+        if oTrans: oTrans.close()
+        elif oSock: oSock.close()
+
+def checkAuthMethods(sIP, iPort, sUsername, boolVerbose=False):
+    oSock = None
+    oTrans = None
+
+    try:
+        oSock = socket.create_connection((sIP, iPort), timeout=iTimeout)
+        oTrans = paramiko.Transport(oSock)
+        oTrans.start_client(timeout=iTimeout)
+
+        try:
+            lstMethods = oTrans.auth_none(sUsername) # Request authentication without providing credentials
+
+            # If authentication succeeds without credentials
+            return {
+                'status': 'none_auth',
+                'methods': lstMethods or []
+            }
+
+        except paramiko.BadAuthenticationType as e:
+            lstMethods = e.allowed_types
+
+            boolPassword = 'password' in lstMethods
+            boolPublicKey = 'publickey' in lstMethods
+            boolInteractive = 'keyboard-interactive' in lstMethods
+
+            if boolPassword and boolPublicKey: sAuth = 'Password + Public Key'
+            elif boolPassword: sAuth = 'Password only'
+            elif boolPublicKey: sAuth = 'Public Key only'
+            elif boolInteractive: sAuth = 'Keyboard Interactive'
+            else: sAuth = 'Other / Restricted'
+
+            if boolVerbose or boolPublicKey or boolPassword:
+                print(
+                    f'[+] {sIP}:{iPort} | User: {sUsername} | '
+                    f'Authentication: {sAuth} | '
+                    f'Methods: {", ".join(lstMethods)}'
+                )
+                testPassword(sIP, iPort, sUsername, 'A'*300, boolVerbose)
+                #testPassword(sIP, iPort, sUsername, 'MyPassword', boolVerbose)
+
+            return {
+                'status': 'detected',
+                'methods': lstMethods,
+                'password': boolPassword,
+                'publickey': boolPublicKey,
+                'keyboard_interactive': boolInteractive
+            }
+
+    except (socket.timeout, socket.error) as e:
+        if boolVerbose: print(f'[-] {sIP}:{iPort} | Connection error: {e}')
+
+    except paramiko.SSHException as e:
+        if boolVerbose: print(f'[-] {sIP}:{iPort} | SSH error: {e}')
+
+    except Exception as e:
+        if boolVerbose: print(f'[-] {sIP}:{iPort} | General error: {e}')
+
+    finally:
+        if oTrans: oTrans.close()
+        elif oSock: oSock.close()
+
+    return {
+        'status': 'unknown',
+        'methods': []
+    }
+
 def getBanner(arrArgs):
     #sIP, iPort, boolVerbose, boolVuln
-    sIP = arrArgs[0]; iPort = arrArgs[1]; boolVerbose = arrArgs[2]; boolVuln = arrArgs[3]
+    sIP = arrArgs[0]; iPort = arrArgs[1]; boolVerbose = arrArgs[2]; boolVuln = arrArgs[3]; sUsername = arrArgs[4]
     sBanner = ''
     try:
         oSock = socket.create_connection((sIP, iPort), timeout=iTimeout)
@@ -161,6 +300,7 @@ def getBanner(arrArgs):
         try: 
             sBanner = bBanner.split(b'\n')[0].decode(errors='ignore')
             print(f'[+] Connection {sIP}:{iPort} has banner {sBanner}')
+            if sUsername: dctAuthResults = checkAuthMethods(sIP, iPort, sUsername, boolVerbose)
             if boolVuln: vulnByBanner(sBanner, sIP, iPort)
         except: pass
     except:
@@ -184,6 +324,7 @@ def main():
               'Last argument should be the target: IP, CIDR or file containing addresses/subnets')
     oParser = optparse.OptionParser(usage=sUsage)
     oParser.add_option('--port', '-p', metavar='INT', help='Port to use, default 22', default=22, type=int)
+    oParser.add_option('--username', '-u', metavar='USERNAME', help='Username for SSH authentication method detection. (will run auth too!)')
     oParser.add_option('--verbose', '-v', action='store_true', help='Verbosity. Default False', default=False)
     (oOptions, lstArgs) = oParser.parse_args()
 
@@ -198,9 +339,11 @@ def main():
         else: 
             lstIPs = getIPs(lstArgs[0])
 
+    if oOptions.verbose: boolVerbose = True
+
     print(f'[!] Sending requests to {len(lstIPs)} addresses')
     pool = ThreadPool(64)
-    pool.map(getBanner, zip(lstIPs, repeat(oOptions.port), repeat(boolVerbose), repeat(True)))
+    pool.map(getBanner, zip(lstIPs, repeat(oOptions.port), repeat(boolVerbose), repeat(True), repeat(oOptions.username)))
     
     #sBanner = getBanner((sIP, iPort, boolVerbose, False))
     #vulnByBanner(sBanner, sIP, iPort)
